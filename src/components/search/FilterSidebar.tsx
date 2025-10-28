@@ -2,29 +2,26 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Clock, 
-  Star, 
   Bus, 
-  Wifi, 
-  AirVent, 
-  Armchair, 
-  Monitor,
   X,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Calendar
 } from "lucide-react";
 
 interface FilterState {
-  routeTypes: string[];
-  operators: string[];
-  amenities: string[];
-  priceRange: [number, number];
-  rating: number;
-  timeSlots: string[];
+  travelDate: string;
+  departureTimeFrom: string;
+  departureTimeTo: string;
+  operatorType: 'PRIVATE' | 'CTB' | '';
+  status: string;
   sortBy: string;
 }
 
@@ -35,40 +32,25 @@ interface FilterSidebarProps {
   onToggle: () => void;
 }
 
-const routeTypes = [
-  { id: "Express", label: "Express", color: "bg-blue-500" },
-  { id: "Luxury", label: "Luxury", color: "bg-purple-500" },
-  { id: "Semi-Express", label: "Semi-Express", color: "bg-green-500" },
-  { id: "Regular", label: "Regular", color: "bg-gray-500" }
+const operatorTypes = [
+  { id: "", label: "All Operators" },
+  { id: "PRIVATE", label: "Private" },
+  { id: "CTB", label: "CTB (SLTB)" }
 ];
 
-const operators = [
-  { id: "SLTB", label: "SLTB" },
-  { id: "Private", label: "Private" }
-];
-
-const amenities = [
-  { id: "AC", label: "Air Conditioning", icon: AirVent },
-  { id: "WiFi", label: "WiFi", icon: Wifi },
-  { id: "Comfortable Seats", label: "Comfortable Seats", icon: Armchair },
-  { id: "Reclining Seats", label: "Reclining Seats", icon: Armchair },
-  { id: "Entertainment", label: "Entertainment", icon: Monitor }
-];
-
-const timeSlots = [
-  { id: "early-morning", label: "Early Morning (5AM - 8AM)", time: "5AM-8AM" },
-  { id: "morning", label: "Morning (8AM - 12PM)", time: "8AM-12PM" },
-  { id: "afternoon", label: "Afternoon (12PM - 5PM)", time: "12PM-5PM" },
-  { id: "evening", label: "Evening (5PM - 8PM)", time: "5PM-8PM" },
-  { id: "night", label: "Night (8PM - 11PM)", time: "8PM-11PM" }
+const statusOptions = [
+  { id: "", label: "All Status" },
+  { id: "pending", label: "Pending" },
+  { id: "active", label: "Active" },
+  { id: "in_transit", label: "In Transit" },
+  { id: "boarding", label: "Boarding" },
+  { id: "departed", label: "Departed" }
 ];
 
 const sortOptions = [
   { id: "departure", label: "Departure Time" },
-  { id: "price-low", label: "Price: Low to High" },
-  { id: "price-high", label: "Price: High to Low" },
   { id: "duration", label: "Duration" },
-  { id: "rating", label: "Rating" }
+  { id: "fare", label: "Fare" }
 ];
 
 const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSidebarProps) => {
@@ -76,33 +58,24 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const toggleArrayFilter = (key: 'routeTypes' | 'operators' | 'amenities' | 'timeSlots', value: string) => {
-    const currentArray = filters[key];
-    const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
-      : [...currentArray, value];
-    updateFilter(key, newArray);
-  };
-
   const clearAllFilters = () => {
+    const today = new Date().toISOString().split('T')[0];
     onFiltersChange({
-      routeTypes: [],
-      operators: [],
-      amenities: [],
-      priceRange: [0, 500],
-      rating: 0,
-      timeSlots: [],
-      sortBy: "departure"
+      travelDate: today,
+      departureTimeFrom: '',
+      departureTimeTo: '',
+      operatorType: '',
+      status: '',
+      sortBy: 'departure'
     });
   };
 
   const activeFiltersCount = 
-    filters.routeTypes.length + 
-    filters.operators.length + 
-    filters.amenities.length + 
-    filters.timeSlots.length + 
-    (filters.rating > 0 ? 1 : 0) +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < 500 ? 1 : 0);
+    (filters.departureTimeFrom ? 1 : 0) + 
+    (filters.departureTimeTo ? 1 : 0) + 
+    (filters.operatorType ? 1 : 0) + 
+    (filters.status ? 1 : 0) + 
+    (filters.travelDate !== new Date().toISOString().split('T')[0] ? 1 : 0);
 
   return (
     <>
@@ -160,8 +133,8 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-1">
-            <Accordion type="multiple" defaultValue={["route-type", "time", "price"]} className="w-full">
+          <CardContent className="space-y-4">
+            <Accordion type="multiple" defaultValue={["travel-date", "operator", "time"]} className="w-full">
               
               {/* Sort By */}
               <AccordionItem value="sort">
@@ -169,154 +142,59 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
                   Sort By
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2">
-                    {sortOptions.map((option) => (
-                      <div key={option.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`sort-${option.id}`}
-                          checked={filters.sortBy === option.id}
-                          onCheckedChange={() => updateFilter('sortBy', option.id)}
-                        />
-                        <label
-                          htmlFor={`sort-${option.id}`}
-                          className="text-sm cursor-pointer"
-                        >
+                  <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select sort option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
                           {option.label}
-                        </label>
-                      </div>
-                    ))}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Travel Date */}
+              <AccordionItem value="travel-date">
+                <AccordionTrigger className="text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Travel Date
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="travel-date" className="text-sm">Select Date</Label>
+                    <Input
+                      id="travel-date"
+                      type="date"
+                      value={filters.travelDate}
+                      onChange={(e) => updateFilter('travelDate', e.target.value)}
+                      className="w-full"
+                    />
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Route Type */}
-              <AccordionItem value="route-type">
+              {/* Operator Type */}
+              <AccordionItem value="operator">
                 <AccordionTrigger className="text-sm font-medium">
                   <div className="flex items-center gap-2">
                     <Bus className="h-4 w-4" />
-                    Route Type
+                    Operator Type
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3">
-                    {routeTypes.map((type) => (
-                      <div key={type.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`route-${type.id}`}
-                          checked={filters.routeTypes.includes(type.id)}
-                          onCheckedChange={() => toggleArrayFilter('routeTypes', type.id)}
-                        />
-                        <label
-                          htmlFor={`route-${type.id}`}
-                          className="text-sm cursor-pointer flex items-center gap-2"
-                        >
-                          <div className={`w-2 h-2 rounded-full ${type.color}`} />
-                          {type.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Departure Time */}
-              <AccordionItem value="time">
-                <AccordionTrigger className="text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Departure Time
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3">
-                    {timeSlots.map((slot) => (
-                      <div key={slot.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`time-${slot.id}`}
-                          checked={filters.timeSlots.includes(slot.id)}
-                          onCheckedChange={() => toggleArrayFilter('timeSlots', slot.id)}
-                        />
-                        <label
-                          htmlFor={`time-${slot.id}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          <div>{slot.label.split(' (')[0]}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {slot.time}
-                          </div>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Price Range */}
-              <AccordionItem value="price">
-                <AccordionTrigger className="text-sm font-medium">
-                  Price Range
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    <Slider
-                      value={filters.priceRange}
-                      onValueChange={(value) => updateFilter('priceRange', value as [number, number])}
-                      max={500}
-                      min={0}
-                      step={20}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Rs. {filters.priceRange[0]}</span>
-                      <span>Rs. {filters.priceRange[1]}</span>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Rating */}
-              <AccordionItem value="rating">
-                <AccordionTrigger className="text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4" />
-                    Minimum Rating
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3">
-                    {[4.5, 4.0, 3.5, 3.0].map((rating) => (
-                      <div key={rating} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`rating-${rating}`}
-                          checked={filters.rating === rating}
-                          onCheckedChange={() => updateFilter('rating', filters.rating === rating ? 0 : rating)}
-                        />
-                        <label
-                          htmlFor={`rating-${rating}`}
-                          className="text-sm cursor-pointer flex items-center gap-1"
-                        >
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <span>{rating} & above</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Operators */}
-              <AccordionItem value="operators">
-                <AccordionTrigger className="text-sm font-medium">
-                  Bus Operators
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3">
-                    {operators.map((operator) => (
+                    {operatorTypes.map((operator) => (
                       <div key={operator.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`operator-${operator.id}`}
-                          checked={filters.operators.includes(operator.id)}
-                          onCheckedChange={() => toggleArrayFilter('operators', operator.id)}
+                          checked={filters.operatorType === operator.id}
+                          onCheckedChange={() => updateFilter('operatorType', operator.id)}
                         />
                         <label
                           htmlFor={`operator-${operator.id}`}
@@ -330,33 +208,58 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Amenities */}
-              <AccordionItem value="amenities">
+              {/* Departure Time Range */}
+              <AccordionItem value="time">
                 <AccordionTrigger className="text-sm font-medium">
-                  Amenities
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Departure Time
+                  </div>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3">
-                    {amenities.map((amenity) => {
-                      const Icon = amenity.icon;
-                      return (
-                        <div key={amenity.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`amenity-${amenity.id}`}
-                            checked={filters.amenities.includes(amenity.id)}
-                            onCheckedChange={() => toggleArrayFilter('amenities', amenity.id)}
-                          />
-                          <label
-                            htmlFor={`amenity-${amenity.id}`}
-                            className="text-sm cursor-pointer flex items-center gap-2"
-                          >
-                            <Icon className="h-4 w-4" />
-                            {amenity.label}
-                          </label>
-                        </div>
-                      );
-                    })}
+                    <div>
+                      <Label htmlFor="time-from" className="text-sm">From</Label>
+                      <Input
+                        id="time-from"
+                        type="time"
+                        value={filters.departureTimeFrom}
+                        onChange={(e) => updateFilter('departureTimeFrom', e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="time-to" className="text-sm">To</Label>
+                      <Input
+                        id="time-to"
+                        type="time"
+                        value={filters.departureTimeTo}
+                        onChange={(e) => updateFilter('departureTimeTo', e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Trip Status */}
+              <AccordionItem value="status">
+                <AccordionTrigger className="text-sm font-medium">
+                  Trip Status
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((status) => (
+                        <SelectItem key={status.id} value={status.id}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
