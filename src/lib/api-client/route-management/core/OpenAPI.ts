@@ -22,7 +22,7 @@ export type OpenAPIConfig = {
 export const OpenAPI: OpenAPIConfig = {
     // BASE: 'http://localhost:8080',
     // BASE: 'http://18.140.161.237:8080',
-    BASE: '/api/route-management/',
+    BASE: '/api/route-management',
     VERSION: '1.0.0',
     WITH_CREDENTIALS: false,
     CREDENTIALS: 'include',
