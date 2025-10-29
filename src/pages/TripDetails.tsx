@@ -301,7 +301,32 @@ const TripDetails = () => {
                       <div className="text-xs text-muted-foreground">Total Distance</div>
                     </div>
                     <div className="text-center p-3 bg-muted/50 rounded-lg">
-                      <div className="font-semibold">{tripData.intermediateStops?.length ? tripData.intermediateStops.length + 2 : (routeData?.stops?.length || 'N/A')}</div>
+                      <div className="font-semibold">{(() => {
+                        // Calculate unique stops count
+                        if (tripData.intermediateStops) {
+                          const uniqueStops = new Set();
+                          
+                          // Add departure stop if it exists
+                          if (tripData.departureStop?.name) {
+                            uniqueStops.add(tripData.departureStop.name);
+                          }
+                          
+                          // Add intermediate stops
+                          tripData.intermediateStops.forEach(stop => {
+                            if (stop.name) uniqueStops.add(stop.name);
+                          });
+                          
+                          // Add arrival stop if it exists and is different from departure
+                          if (tripData.arrivalStop?.name && 
+                              tripData.arrivalStop.name !== tripData.departureStop?.name) {
+                            uniqueStops.add(tripData.arrivalStop.name);
+                          }
+                          
+                          return uniqueStops.size;
+                        }
+                        
+                        return routeData?.stops?.length || 'N/A';
+                      })()}</div>
                       <div className="text-xs text-muted-foreground">Total Stops</div>
                     </div>
                     <div className="text-center p-3 bg-muted/50 rounded-lg">
@@ -324,16 +349,60 @@ const TripDetails = () => {
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-3 mt-3">
                         <RouteMap 
-                          stops={routeData?.stops ? routeData.stops.map(stop => ({ name: stop.name || '', km: 0 })) : 
-                            tripData.intermediateStops ? [
-                              { name: tripData.departureStop?.name || 'Origin', km: 0 },
-                              ...tripData.intermediateStops.map((stop, index) => ({ 
-                                name: stop.name || `Stop ${index + 1}`, 
-                                km: stop.distanceFromStart || index + 1 
-                              })),
-                              { name: tripData.arrivalStop?.name || 'Destination', km: tripData.distance || tripData.intermediateStops.length + 1 }
-                            ] : []
-                          }
+                          stops={(() => {
+                            if (routeData?.stops) {
+                              // Use route data if available
+                              return routeData.stops.map(stop => ({ 
+                                name: stop.name || '', 
+                                km: 0 // Route data might not have distance info
+                              }));
+                            } else if (tripData.intermediateStops) {
+                              const uniqueStops: Array<{ name: string; km: number }> = [];
+                              const addedNames = new Set<string>();
+                              
+                              // Add departure stop if not already in intermediate stops
+                              if (tripData.departureStop?.name) {
+                                const hasOriginInIntermediate = tripData.intermediateStops.some(stop => 
+                                  stop.name === tripData.departureStop?.name
+                                );
+                                if (!hasOriginInIntermediate) {
+                                  uniqueStops.push({
+                                    name: tripData.departureStop.name,
+                                    km: 0
+                                  });
+                                  addedNames.add(tripData.departureStop.name);
+                                }
+                              }
+                              
+                              // Add intermediate stops
+                              tripData.intermediateStops.forEach((stop, index) => {
+                                const stopName = stop.name || `Stop ${index + 1}`;
+                                if (!addedNames.has(stopName)) {
+                                  uniqueStops.push({
+                                    name: stopName,
+                                    km: stop.distanceFromStart || index + 1
+                                  });
+                                  addedNames.add(stopName);
+                                }
+                              });
+                              
+                              // Add arrival stop if not already added and different from departure
+                              if (tripData.arrivalStop?.name && 
+                                  tripData.arrivalStop.name !== tripData.departureStop?.name &&
+                                  !addedNames.has(tripData.arrivalStop.name)) {
+                                const maxDistance = uniqueStops.length > 0 ? Math.max(...uniqueStops.map(s => s.km)) : 0;
+                                uniqueStops.push({
+                                  name: tripData.arrivalStop.name,
+                                  km: tripData.distance || maxDistance + 1
+                                });
+                              }
+                              
+                              // Sort by distance
+                              return uniqueStops.sort((a, b) => a.km - b.km);
+                            }
+                            
+                            return [];
+                          })()}
                           routeName={tripData.routeName || routeData?.routeName || 'Route'}
                         />
                       </CollapsibleContent>
@@ -352,55 +421,83 @@ const TripDetails = () => {
                         </Button>
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-3 mt-3">
-                        {/* Departure Stop */}
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-muted/50">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
-                            <div>
-                              <div className="font-medium">{tripData.departureStop?.name || 'Origin'}</div>
-                              <div className="text-xs text-muted-foreground">0 km</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-primary">
-                              {formatTime(tripData.scheduledDeparture) || formatTime(tripData.estimatedDeparture) || 'TBD'}
-                            </div>
-                          </div>
-                        </div>
+                        {/* Build a complete, non-duplicated list of stops */}
+                        {(() => {
+                          const allStops: Array<{
+                            name: string;
+                            distance: number;
+                            time: string;
+                            isOrigin?: boolean;
+                            isDestination?: boolean;
+                          }> = [];
 
-                        {/* Intermediate Stops */}
-                        {tripData.intermediateStops?.map((stop: PassengerIntermediateStop, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-muted/50">
-                            <div className="flex items-center gap-3">
-                              <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
-                              <div>
-                                <div className="font-medium">{stop.name || `Stop ${index + 1}`}</div>
-                                <div className="text-xs text-muted-foreground">{stop.distanceFromStart ? `${stop.distanceFromStart} km` : `${index + 1} km`}</div>
+                          // Check if intermediateStops already includes origin/destination
+                          const hasOriginInIntermediate = tripData.intermediateStops?.some(stop => 
+                            stop.name === tripData.departureStop?.name
+                          );
+                          const hasDestinationInIntermediate = tripData.intermediateStops?.some(stop => 
+                            stop.name === tripData.arrivalStop?.name
+                          );
+
+                          // Add departure stop only if not already in intermediateStops
+                          if (!hasOriginInIntermediate && tripData.departureStop?.name) {
+                            allStops.push({
+                              name: tripData.departureStop.name,
+                              distance: 0,
+                              time: formatTime(tripData.scheduledDeparture) || formatTime(tripData.estimatedDeparture) || 'TBD',
+                              isOrigin: true
+                            });
+                          }
+
+                          // Add intermediate stops
+                          if (tripData.intermediateStops) {
+                            tripData.intermediateStops.forEach((stop, index) => {
+                              allStops.push({
+                                name: stop.name || `Stop ${index + 1}`,
+                                distance: stop.distanceFromStart || index + 1,
+                                time: formatTime(stop.estimatedArrivalTime) || formatTime(stop.estimatedDepartureTime) || 'TBD',
+                                isOrigin: stop.name === tripData.departureStop?.name,
+                                isDestination: stop.name === tripData.arrivalStop?.name
+                              });
+                            });
+                          }
+
+                          // Add arrival stop only if not already in intermediateStops
+                          if (!hasDestinationInIntermediate && tripData.arrivalStop?.name && 
+                              tripData.arrivalStop.name !== tripData.departureStop?.name) {
+                            allStops.push({
+                              name: tripData.arrivalStop.name,
+                              distance: tripData.distance || (allStops.length > 0 ? Math.max(...allStops.map(s => s.distance)) + 1 : 1),
+                              time: formatTime(tripData.scheduledArrival) || formatTime(tripData.estimatedArrival) || 'TBD',
+                              isDestination: true
+                            });
+                          }
+
+                          // Sort by distance to ensure proper order
+                          allStops.sort((a, b) => a.distance - b.distance);
+
+                          return allStops.map((stop, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-muted/50">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                                  stop.isOrigin ? 'bg-green-500' : 
+                                  stop.isDestination ? 'bg-red-500' : 'bg-primary'
+                                }`}></div>
+                                <div>
+                                  <div className="font-medium">
+                                    {stop.name}
+                                    {stop.isOrigin && <span className="text-xs text-green-600 ml-1">(Origin)</span>}
+                                    {stop.isDestination && <span className="text-xs text-red-600 ml-1">(Destination)</span>}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">{stop.distance} km</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-medium text-primary">{stop.time}</div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="font-medium text-primary">
-                                {formatTime(stop.estimatedArrivalTime) || formatTime(stop.estimatedDepartureTime) || 'TBD'}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        {/* Arrival Stop */}
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-muted/50">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
-                            <div>
-                              <div className="font-medium">{tripData.arrivalStop?.name || 'Destination'}</div>
-                              <div className="text-xs text-muted-foreground">{tripData.distance ? `${tripData.distance} km` : 'Final Stop'}</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-primary">
-                              {formatTime(tripData.scheduledArrival) || formatTime(tripData.estimatedArrival) || 'TBD'}
-                            </div>
-                          </div>
-                        </div>
+                          ));
+                        })()}
                       </CollapsibleContent>
                     </Collapsible>
                   )}

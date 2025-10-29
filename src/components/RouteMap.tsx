@@ -54,20 +54,36 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
 
         if (!mapRef.current) return;
 
-        // Get coordinates for all stops
-        const validStops = stops.filter(stop => mockCoordinates[stop.name]);
+        // Get coordinates for all stops with fallback for missing ones
+        const stopsWithCoordinates = stops.map((stop, index) => {
+          if (mockCoordinates[stop.name]) {
+            return { ...stop, coords: mockCoordinates[stop.name] };
+          } else {
+            // Generate fallback coordinates along a route in Sri Lanka
+            // This creates a roughly north-south route if stops aren't found
+            const baseLat = 6.9319; // Colombo Fort latitude
+            const baseLng = 79.8478; // Colombo Fort longitude
+            const offset = index * 0.1; // Spread stops out by ~11km
+            return { 
+              ...stop, 
+              coords: { 
+                lat: baseLat + offset, 
+                lng: baseLng + (offset * 0.1) // Slight eastward drift
+              } 
+            };
+          }
+        });
         
-        if (validStops.length === 0) {
-          setError("No valid coordinates found for route stops");
+        if (stopsWithCoordinates.length === 0) {
+          setError("No stops provided for route");
           setIsLoading(false);
           return;
         }
 
         // Calculate center of the route
         const bounds = new google.maps.LatLngBounds();
-        validStops.forEach(stop => {
-          const coords = mockCoordinates[stop.name];
-          bounds.extend(new google.maps.LatLng(coords.lat, coords.lng));
+        stopsWithCoordinates.forEach(stop => {
+          bounds.extend(new google.maps.LatLng(stop.coords.lat, stop.coords.lng));
         });
 
         // Create map
@@ -88,7 +104,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
         mapInstance.fitBounds(bounds);
 
         // Create route path
-        const routePath = validStops.map(stop => mockCoordinates[stop.name]);
+        const routePath = stopsWithCoordinates.map(stop => stop.coords);
         
         const routeLine = new google.maps.Polyline({
           path: routePath,
@@ -101,10 +117,9 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
         routeLine.setMap(mapInstance);
 
         // Add markers for each stop
-        validStops.forEach((stop, index) => {
-          const coords = mockCoordinates[stop.name];
+        stopsWithCoordinates.forEach((stop, index) => {
           const isFirst = index === 0;
-          const isLast = index === validStops.length - 1;
+          const isLast = index === stopsWithCoordinates.length - 1;
           
           // Create custom marker element
           const markerDiv = document.createElement('div');
@@ -124,7 +139,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
 
           const marker = new AdvancedMarkerElement({
             map: mapInstance,
-            position: coords,
+            position: stop.coords,
             content: markerDiv,
             title: `${stop.name} (${stop.km} km)`
           });
