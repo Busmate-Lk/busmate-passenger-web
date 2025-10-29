@@ -5,6 +5,10 @@ import { MapPin, Navigation } from "lucide-react";
 interface Stop {
   name: string;
   km: number;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 interface RouteMapProps {
@@ -13,27 +17,6 @@ interface RouteMapProps {
 }
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-// Mock coordinates for Sri Lankan cities (you would get these from a geocoding service in production)
-const mockCoordinates: { [key: string]: { lat: number; lng: number } } = {
-  "Colombo Fort": { lat: 6.9319, lng: 79.8478 },
-  "Kelaniya": { lat: 6.9553, lng: 79.9222 },
-  "Kadawatha": { lat: 7.0108, lng: 79.9500 },
-  "Gampaha": { lat: 7.0917, lng: 79.9950 },
-  "Veyangoda": { lat: 7.1583, lng: 80.0833 },
-  "Polgahawela": { lat: 7.3333, lng: 80.3000 },
-  "Kurunegala": { lat: 7.4867, lng: 80.3647 },
-  "Dambulla": { lat: 7.8600, lng: 80.6519 },
-  "Matale": { lat: 7.4698, lng: 80.6238 },
-  "Kandy": { lat: 7.2906, lng: 80.6337 },
-  "Rajagiriya": { lat: 6.9067, lng: 79.8942 },
-  "Kaduwela": { lat: 6.9333, lng: 79.9833 },
-  "Avissawella": { lat: 6.9519, lng: 80.2108 },
-  "Ratnapura": { lat: 6.6828, lng: 80.4000 },
-  "Balangoda": { lat: 6.6500, lng: 80.6833 },
-  "Haputale": { lat: 6.7667, lng: 80.9667 },
-  "Bandarawela": { lat: 6.8333, lng: 80.9833 }
-};
 
 const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -54,28 +37,25 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
 
         if (!mapRef.current) return;
 
-        // Get coordinates for all stops with fallback for missing ones
-        const stopsWithCoordinates = stops.map((stop, index) => {
-          if (mockCoordinates[stop.name]) {
-            return { ...stop, coords: mockCoordinates[stop.name] };
-          } else {
-            // Generate fallback coordinates along a route in Sri Lanka
-            // This creates a roughly north-south route if stops aren't found
-            const baseLat = 6.9319; // Colombo Fort latitude
-            const baseLng = 79.8478; // Colombo Fort longitude
-            const offset = index * 0.1; // Spread stops out by ~11km
-            return { 
-              ...stop, 
-              coords: { 
-                lat: baseLat + offset, 
-                lng: baseLng + (offset * 0.1) // Slight eastward drift
-              } 
-            };
+        // Get coordinates for all stops using real API location data
+        const stopsWithCoordinates = stops.filter(stop => 
+          stop.location?.latitude && stop.location?.longitude
+        ).map(stop => ({
+          ...stop,
+          coords: {
+            lat: stop.location!.latitude,
+            lng: stop.location!.longitude
           }
-        });
+        }));
         
         if (stopsWithCoordinates.length === 0) {
-          setError("No stops provided for route");
+          setError("No valid location coordinates found for route stops");
+          setIsLoading(false);
+          return;
+        }
+
+        if (stopsWithCoordinates.length < 2) {
+          setError("At least 2 stops with valid coordinates are required to display route");
           setIsLoading(false);
           return;
         }
@@ -103,18 +83,62 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
         // Fit map to bounds
         mapInstance.fitBounds(bounds);
 
-        // Create route path
-        const routePath = stopsWithCoordinates.map(stop => stop.coords);
-        
-        const routeLine = new google.maps.Polyline({
-          path: routePath,
-          geodesic: true,
-          strokeColor: "#2563eb", // Primary color
-          strokeOpacity: 1.0,
-          strokeWeight: 4,
+        // Create route using Google Directions API for realistic road paths
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer({
+          suppressMarkers: true, // We'll add custom markers
+          polylineOptions: {
+            strokeColor: "#2563eb", // Primary color
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+          }
         });
+        
+        directionsRenderer.setMap(mapInstance);
 
-        routeLine.setMap(mapInstance);
+        // Prepare waypoints for directions
+        const origin = stopsWithCoordinates[0].coords;
+        const destination = stopsWithCoordinates[stopsWithCoordinates.length - 1].coords;
+        const waypoints = stopsWithCoordinates.slice(1, -1).map(stop => ({
+          location: stop.coords,
+          stopover: true
+        }));
+
+        // Request directions
+        try {
+          const directionsResult = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
+            directionsService.route({
+              origin: origin,
+              destination: destination,
+              waypoints: waypoints,
+              travelMode: google.maps.TravelMode.DRIVING,
+              optimizeWaypoints: false, // Keep the order of stops
+              avoidHighways: false,
+              avoidTolls: false
+            }, (result, status) => {
+              if (status === google.maps.DirectionsStatus.OK && result) {
+                resolve(result);
+              } else {
+                reject(new Error(`Directions request failed: ${status}`));
+              }
+            });
+          });
+
+          directionsRenderer.setDirections(directionsResult);
+        } catch (directionsError) {
+          console.warn("Failed to get directions, falling back to straight lines:", directionsError);
+          
+          // Fallback to straight-line polyline if Directions API fails
+          const routePath = stopsWithCoordinates.map(stop => stop.coords);
+          const routeLine = new google.maps.Polyline({
+            path: routePath,
+            geodesic: true,
+            strokeColor: "#2563eb",
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+          });
+          routeLine.setMap(mapInstance);
+        }
 
         // Add markers for each stop
         stopsWithCoordinates.forEach((stop, index) => {

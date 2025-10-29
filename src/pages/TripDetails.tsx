@@ -354,10 +354,14 @@ const TripDetails = () => {
                               // Use route data if available
                               return routeData.stops.map(stop => ({ 
                                 name: stop.name || '', 
-                                km: 0 // Route data might not have distance info
+                                km: 0, // Route data might not have distance info
+                                location: stop.location ? {
+                                  latitude: stop.location.latitude || 0,
+                                  longitude: stop.location.longitude || 0
+                                } : undefined
                               }));
                             } else if (tripData.intermediateStops) {
-                              const uniqueStops: Array<{ name: string; km: number }> = [];
+                              const uniqueStops: Array<{ name: string; km: number; location?: { latitude: number; longitude: number } }> = [];
                               const addedNames = new Set<string>();
                               
                               // Add departure stop if not already in intermediate stops
@@ -368,7 +372,11 @@ const TripDetails = () => {
                                 if (!hasOriginInIntermediate) {
                                   uniqueStops.push({
                                     name: tripData.departureStop.name,
-                                    km: 0
+                                    km: 0,
+                                    location: tripData.departureStop.location ? {
+                                      latitude: tripData.departureStop.location.latitude || 0,
+                                      longitude: tripData.departureStop.location.longitude || 0
+                                    } : undefined
                                   });
                                   addedNames.add(tripData.departureStop.name);
                                 }
@@ -380,7 +388,11 @@ const TripDetails = () => {
                                 if (!addedNames.has(stopName)) {
                                   uniqueStops.push({
                                     name: stopName,
-                                    km: stop.distanceFromStart || index + 1
+                                    km: stop.distanceFromStart || index + 1,
+                                    location: stop.location ? {
+                                      latitude: stop.location.latitude || 0,
+                                      longitude: stop.location.longitude || 0
+                                    } : undefined
                                   });
                                   addedNames.add(stopName);
                                 }
@@ -393,12 +405,18 @@ const TripDetails = () => {
                                 const maxDistance = uniqueStops.length > 0 ? Math.max(...uniqueStops.map(s => s.km)) : 0;
                                 uniqueStops.push({
                                   name: tripData.arrivalStop.name,
-                                  km: tripData.distance || maxDistance + 1
+                                  km: tripData.distance || maxDistance + 1,
+                                  location: tripData.arrivalStop.location ? {
+                                    latitude: tripData.arrivalStop.location.latitude || 0,
+                                    longitude: tripData.arrivalStop.location.longitude || 0
+                                  } : undefined
                                 });
                               }
                               
-                              // Sort by distance
-                              return uniqueStops.sort((a, b) => a.km - b.km);
+                              // Sort by distance and filter out stops without valid coordinates
+                              return uniqueStops
+                                .sort((a, b) => a.km - b.km)
+                                .filter(stop => stop.location?.latitude && stop.location?.longitude);
                             }
                             
                             return [];
