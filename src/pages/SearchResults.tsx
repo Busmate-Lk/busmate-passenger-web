@@ -199,7 +199,7 @@ const SearchResults = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           {/* Mobile Filter */}
           <div className="lg:hidden mb-6">
             <FilterSidebar

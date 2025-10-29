@@ -197,7 +197,7 @@ const TripDetails = () => {
       {/* Header Section */}
       <div className="pt-24 pb-8 bg-gradient-hero">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="mx-auto">
             <Button 
               variant="ghost" 
               onClick={() => navigate("/search")}
@@ -250,7 +250,7 @@ const TripDetails = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="mx-auto">
           <div className="grid lg:grid-cols-3 gap-6">
             
             {/* Main Details Column */}
