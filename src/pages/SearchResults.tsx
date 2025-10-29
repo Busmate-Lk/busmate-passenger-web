@@ -179,8 +179,16 @@ const SearchResults = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
+      <div className="pt-32 pb-20 relative">
       {/* Header Section */}
-      <div className="pt-24 pb-12 bg-gradient-hero">
+      {/* Background image (low opacity) */}
+        <img
+          src="/Autobus-de-luxe.jpg"
+          alt="Bus background"
+          className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
+        />
+        {/* Keep the existing gradient/color effect above the image */}
+        <div className="absolute inset-0 bg-gradient-hero opacity-90" />
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">

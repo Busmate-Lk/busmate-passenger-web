@@ -195,55 +195,64 @@ const TripDetails = () => {
       <Navbar />
       
       {/* Header Section */}
-      <div className="pt-24 pb-8 bg-gradient-hero">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/search")}
-              className="text-white hover:bg-white/10 mb-6"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Search Results
-            </Button>
-            
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 rounded-xl bg-white/10 backdrop-blur-sm">
-                <Bus className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                  {tripData.bus?.plateNumber ? `Bus ${tripData.bus.plateNumber}` : 'Bus Details'} - {tripData.operator?.name || 'Bus Service'}
-                </h1>
-                <div className="flex items-center gap-4 text-white/90">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>{tripData.departureStop?.name || 'Origin'}</span>
-                  </div>
-                  <ArrowRight className="h-4 w-4" />
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>{tripData.arrivalStop?.name || 'Destination'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <div className="pt-24 pb-8 relative">
+        {/* Background image (low opacity) */}
+        <img
+          src="/Autobus-de-luxe.jpg"
+          alt="Bus background"
+          className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
+        />
+        {/* Keep the existing gradient/color effect above the image */}
+        <div className="absolute inset-0 bg-gradient-hero opacity-90" />
 
-            <div className="flex flex-wrap gap-4 items-center">
-              <Badge variant={tripData.bus?.type === "Luxury" ? "default" : "secondary"} className="px-3 py-1">
-                {tripData.bus?.type || 'Regular Service'}
-              </Badge>
-              {tripData.operator && (
-                <div className="flex items-center gap-1 text-white/90">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>{tripData.operator.type || 'Bus Service'}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1 text-white/90">
-                <Clock className="h-4 w-4" />
-                <span>{formatDuration(tripData.duration)}</span>
-              </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="mx-auto">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/search")}
+          className="text-white hover:bg-white/10 mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Search Results
+        </Button>
+        
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-3 rounded-xl bg-white/10 backdrop-blur-sm">
+            <Bus className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+          {tripData.bus?.plateNumber ? `Bus ${tripData.bus.plateNumber}` : 'Bus Details'} - {tripData.operator?.name || 'Bus Service'}
+            </h1>
+            <div className="flex items-center gap-4 text-white/90">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>{tripData.departureStop?.name || 'Origin'}</span>
+          </div>
+          <ArrowRight className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>{tripData.arrivalStop?.name || 'Destination'}</span>
+          </div>
             </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-4 items-center">
+          <Badge variant={tripData.bus?.type === "Luxury" ? "default" : "secondary"} className="px-3 py-1">
+            {tripData.bus?.type || 'Regular Service'}
+          </Badge>
+          {tripData.operator && (
+            <div className="flex items-center gap-1 text-white/90">
+          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+          <span>{tripData.operator.type || 'Bus Service'}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 text-white/90">
+            <Clock className="h-4 w-4" />
+            <span>{formatDuration(tripData.duration)}</span>
+          </div>
+        </div>
           </div>
         </div>
       </div>
