@@ -12,7 +12,7 @@ interface RouteMapProps {
   routeName: string;
 }
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyA14s5MfyKHnIBxCBmMPx8HQ6vVyyL2Tns";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 // Mock coordinates for Sri Lankan cities (you would get these from a geocoding service in production)
 const mockCoordinates: { [key: string]: { lat: number; lng: number } } = {
