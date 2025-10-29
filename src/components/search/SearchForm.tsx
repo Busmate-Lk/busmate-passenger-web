@@ -8,6 +8,11 @@ import type { PassengerStopResponse } from "@/lib/api-client/route-management";
 
 interface SearchFormProps {
   variant?: "hero" | "page";
+  // Optional initial values (used when navigating to the search page via URL or location.state)
+  initialFromText?: string;
+  initialToText?: string;
+  initialFromStopId?: string;
+  initialToStopId?: string;
 }
 
 interface StopOption {
@@ -16,11 +21,17 @@ interface StopOption {
   city: string;
 }
 
-const SearchForm = ({ variant = "hero" }: SearchFormProps) => {
-  const [fromText, setFromText] = useState("");
-  const [toText, setToText] = useState("");
-  const [fromStopId, setFromStopId] = useState("");
-  const [toStopId, setToStopId] = useState("");
+const SearchForm = ({
+  variant = "hero",
+  initialFromText,
+  initialToText,
+  initialFromStopId,
+  initialToStopId,
+}: SearchFormProps) => {
+  const [fromText, setFromText] = useState(initialFromText || "");
+  const [toText, setToText] = useState(initialToText || "");
+  const [fromStopId, setFromStopId] = useState(initialFromStopId || "");
+  const [toStopId, setToStopId] = useState(initialToStopId || "");
   const [fromStops, setFromStops] = useState<StopOption[]>([]);
   const [toStops, setToStops] = useState<StopOption[]>([]);
   const [fromLoading, setFromLoading] = useState(false);
@@ -155,6 +166,14 @@ const SearchForm = ({ variant = "hero" }: SearchFormProps) => {
       if (toDebounceTimer) clearTimeout(toDebounceTimer);
     };
   }, [fromDebounceTimer, toDebounceTimer]);
+
+  // Sync when parent provides new initial values (e.g., when SearchResults reads URL params)
+  useEffect(() => {
+    if (initialFromText !== undefined) setFromText(initialFromText);
+    if (initialToText !== undefined) setToText(initialToText);
+    if (initialFromStopId !== undefined) setFromStopId(initialFromStopId);
+    if (initialToStopId !== undefined) setToStopId(initialToStopId);
+  }, [initialFromText, initialToText, initialFromStopId, initialToStopId]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

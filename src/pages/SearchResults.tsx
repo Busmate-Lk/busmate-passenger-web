@@ -186,7 +186,13 @@ const SearchResults = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">
               Find Your Perfect Route
             </h1>
-            <SearchForm variant="page" />
+            <SearchForm
+              variant="page"
+              initialFromText={searchParams.fromText || searchParams.fromName}
+              initialToText={searchParams.toText || searchParams.toName}
+              initialFromStopId={searchParams.fromStopId}
+              initialToStopId={searchParams.toStopId}
+            />
           </div>
         </div>
       </div>
