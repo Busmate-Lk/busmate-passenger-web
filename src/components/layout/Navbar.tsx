@@ -4,15 +4,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Search, Menu, User, LogOut, Settings, Ticket, Heart, Wallet, Bell } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authService } from "@/lib/auth";
 import profilePhoto from "@/assets/profile-photo.jpg";
 import busLogo from "@/assets/bus-logo.png";
+import { useAuth } from "@/contexts/AuthContext";
+
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(authService.getCurrentUser());
   const navigate = useNavigate();
+  
+  // Use our custom authentication context
+  const { signIn, signOut, isAuthenticated, user, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,30 +25,20 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = authService.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      if (authenticated) {
-        setUser(authService.getCurrentUser());
-      } else {
-        setUser(null);
-      }
-    };
-    
-    // Check on mount
-    checkAuth();
-    
-    // Check on storage changes (for logout from another tab)
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
-  }, []);
+  const handleLogin = async () => {
+    try {
+      await signIn();
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
 
-  const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
-    setUser(null);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -74,20 +67,20 @@ const Navbar = () => {
               isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
             }`}>Routes</Link>
             <div className="flex items-center space-x-3">
-              {isAuthenticated && user ? (
+              {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={profilePhoto} alt={user.name} />
+                        <AvatarImage src={profilePhoto} alt={user?.username || 'User'} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {user?.username?.slice(0, 2).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <span className={`hidden sm:block transition-colors ${
                         isScrolled ? 'text-foreground' : 'text-white'
                       }`}>
-                        {user.name.split(' ')[0]}
+                        {user?.username || 'User'}
                       </span>
                     </button>
                   </DropdownMenuTrigger>
@@ -142,27 +135,25 @@ const Navbar = () => {
                 </DropdownMenu>
               ) : (
                 <>
-                  <Link to="/login">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className={`transition-all duration-300 ${
-                        isScrolled 
-                          ? 'text-foreground hover:bg-muted' 
-                          : 'text-white hover:bg-white/10'
-                      }`}
-                    >
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/signup">
-                    <Button 
-                      size="sm" 
-                      className="bg-gradient-primary text-white hover:opacity-90 transition-opacity"
-                    >
-                      Sign Up
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleLogin}
+                    className={`transition-all duration-300 ${
+                      isScrolled 
+                        ? 'text-foreground hover:bg-muted' 
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleLogin}
+                    className="bg-gradient-primary text-white hover:opacity-90 transition-opacity"
+                  >
+                    Sign Up
+                  </Button>
                 </>
               )}
             </div>
@@ -184,16 +175,16 @@ const Navbar = () => {
                 Search Routes
               </Link>
               <div className="flex gap-3">
-                {isAuthenticated && user ? (
+                {isAuthenticated ? (
                   <>
                     <Link to="/profile" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted transition-colors">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={profilePhoto} alt={user.name} />
+                        <AvatarImage src={profilePhoto} alt={user?.username || 'User'} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {user?.username?.slice(0, 2).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-foreground">{user.name}</span>
+                      <span className="text-foreground">{user?.username || 'User'}</span>
                     </Link>
                     <Button 
                       variant="outline" 
@@ -207,23 +198,21 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    <Link to="/login">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="border-border bg-background text-foreground hover:bg-muted transition-colors"
-                      >
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/signup">
-                      <Button 
-                        size="sm" 
-                        className="bg-gradient-primary text-white hover:opacity-90 transition-opacity"
-                      >
-                        Sign Up
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleLogin}
+                      className="border-border bg-background text-foreground hover:bg-muted transition-colors"
+                    >
+                      Login
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={handleLogin}
+                      className="bg-gradient-primary text-white hover:opacity-90 transition-opacity"
+                    >
+                      Sign Up
+                    </Button>
                   </>
                 )}
               </div>

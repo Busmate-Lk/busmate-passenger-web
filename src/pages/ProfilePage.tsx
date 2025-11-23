@@ -6,32 +6,47 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { User, Mail, Phone, Calendar, Settings, LogOut, Ticket, Heart, Wallet, Bell, Shield, MapPin, Star } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { authService, type User as UserType } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import profilePhoto from "@/assets/profile-photo.jpg";
 import Navbar from "@/components/layout/Navbar";
 const ProfilePage = () => {
-  const [user, setUser] = useState<UserType | null>(null);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { user, isAuthenticated, isLoading, signOut } = useAuth();
+
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (!currentUser) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
       return;
     }
-    setUser(currentUser);
-  }, [navigate]);
-  const handleLogout = () => {
-    authService.logout();
-    toast({
-      title: "Logged out successfully",
-      description: "See you next time!"
-    });
-    navigate('/');
+  }, [isAuthenticated, isLoading, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "See you next time!"
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Logout failed",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (!user) {
     return null;
   }
