@@ -19,6 +19,7 @@
     "generate:api-ticketing:local": "npx openapi-typescript-codegen --input http://localhost:8083/v3/api-docs  --output ./src/lib/api-client/ticketing-management"
   },
   "dependencies": {
+    "@asgardeo/react": "^0.6.8",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
