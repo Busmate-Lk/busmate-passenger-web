@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AsgardeoProvider, useAsgardeo, useUser } from '@asgardeo/react';
+import { mapAsgardeoProfileToUser, AUTH_CONSTANTS } from '@/lib/utils/auth';
 
 // Define the user type based on Asgardeo's user profile
 export interface User {
@@ -46,22 +47,6 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { signIn: asgardeoSignIn, signOut: asgardeoSignOut, isSignedIn, isLoading: asgardeoLoading } = useAsgardeo();
   const { profile } = useUser();
 
-  // Convert Asgardeo profile to our User type
-  const mapAsgardeoProfileToUser = (asgardeoProfile: any): User | null => {
-    if (!asgardeoProfile) return null;
-    
-    return {
-      id: asgardeoProfile.sub || asgardeoProfile.id || '',
-      username: asgardeoProfile.username || asgardeoProfile.preferred_username || asgardeoProfile.email || '',
-      email: asgardeoProfile.email || '',
-      name: asgardeoProfile.name || asgardeoProfile.given_name || asgardeoProfile.username || '',
-      phone: asgardeoProfile.phone_number || asgardeoProfile.phone,
-      joinedDate: asgardeoProfile.created_time || new Date().toISOString(),
-      isEmailVerified: asgardeoProfile.email_verified || false,
-      isPhoneVerified: asgardeoProfile.phone_number_verified || false,
-    };
-  };
-
   // Update user state when Asgardeo profile changes
   useEffect(() => {
     if (isSignedIn && profile) {
@@ -83,7 +68,7 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       await asgardeoSignIn();
     } catch (error) {
-      console.error('Sign in failed:', error);
+      console.error(AUTH_CONSTANTS.ERROR_MESSAGES.SIGN_IN_FAILED, error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -96,7 +81,7 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await asgardeoSignOut();
       setUser(null);
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error(AUTH_CONSTANTS.ERROR_MESSAGES.SIGN_OUT_FAILED, error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -104,7 +89,9 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateProfile = async (updates: Partial<User>): Promise<void> => {
-    if (!user) throw new Error('No user to update');
+    if (!user) throw new Error(AUTH_CONSTANTS.ERROR_MESSAGES.NO_USER_TO_UPDATE);
+    
+    const previousUser = user;
     
     try {
       setIsLoading(true);
@@ -119,8 +106,9 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // await updateUserProfile(user.id, updates);
       
     } catch (error) {
-      console.error('Profile update failed:', error);
+      console.error(AUTH_CONSTANTS.ERROR_MESSAGES.PROFILE_UPDATE_FAILED, error);
       // Revert optimistic update on error
+      setUser(previousUser);
       throw error;
     } finally {
       setIsLoading(false);
@@ -137,7 +125,7 @@ const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(mappedUser);
       }
     } catch (error) {
-      console.error('User refresh failed:', error);
+      console.error(AUTH_CONSTANTS.ERROR_MESSAGES.USER_REFRESH_FAILED, error);
       throw error;
     } finally {
       setIsLoading(false);
