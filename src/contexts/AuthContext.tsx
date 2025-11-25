@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useAsgardeo, useUser } from '@asgardeo/react';
+import { AsgardeoProvider, useAsgardeo, useUser } from '@asgardeo/react';
 
 // Define the user type based on Asgardeo's user profile
 export interface User {
@@ -37,8 +37,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Auth Provider Component
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+// Internal Auth Provider Component (wrapped by AsgardeoProvider)
+const InternalAuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -159,6 +159,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
+  );
+};
+
+// Main Auth Provider Component that wraps AsgardeoProvider
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  return (
+    <AsgardeoProvider
+      clientId="uugkfsXAsFzkzaALcRk4D2vnnwsa"
+      baseUrl="https://api.asgardeo.io/t/busmate"
+    >
+      <InternalAuthProvider>
+        {children}
+      </InternalAuthProvider>
+    </AsgardeoProvider>
   );
 };
 
