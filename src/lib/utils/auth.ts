@@ -31,27 +31,59 @@ export const isValidUser = (user: User | null): user is User => {
 
 /**
  * Creates a display name for the user based on available information
- * @param user - User object
+ * @param user - User object or Asgardeo profile
  * @returns formatted display name
  */
-export const getUserDisplayName = (user: User): string => {
-  if (user.name && user.name.trim()) {
-    return user.name;
+export const getUserDisplayName = (user: User | any): string => {
+  if (!user) return 'User';
+  
+  // Handle Asgardeo profile format
+  if (user.displayName && typeof user.displayName === 'string' && user.displayName.trim()) {
+    return user.displayName.trim();
   }
-  if (user.username && user.username.trim()) {
-    return user.username;
+  if (user.name && typeof user.name === 'string' && user.name.trim()) {
+    return user.name.trim();
   }
-  return user.email;
+  if (user.given_name && user.family_name && 
+      typeof user.given_name === 'string' && typeof user.family_name === 'string') {
+    return `${user.given_name} ${user.family_name}`.trim();
+  }
+  if (user.given_name && typeof user.given_name === 'string' && user.given_name.trim()) {
+    return user.given_name.trim();
+  }
+  if (user.username && typeof user.username === 'string' && user.username.trim()) {
+    return user.username.trim();
+  }
+  if (user.preferred_username && typeof user.preferred_username === 'string' && user.preferred_username.trim()) {
+    return user.preferred_username.trim();
+  }
+  if (user.email && typeof user.email === 'string' && user.email.trim()) {
+    return user.email.trim();
+  }
+  return 'User';
 };
 
 /**
  * Gets user initials for avatar display
- * @param user - User object
+ * @param user - User object or Asgardeo profile
  * @returns user initials (max 2 characters)
  */
-export const getUserInitials = (user: User): string => {
+export const getUserInitials = (user: User | any): string => {
+  if (!user) return 'U';
+  
+  // Try to get initials from Asgardeo profile first
+  if (user.given_name && user.family_name && 
+      typeof user.given_name === 'string' && typeof user.family_name === 'string' &&
+      user.given_name.length > 0 && user.family_name.length > 0) {
+    return `${user.given_name[0]}${user.family_name[0]}`.toUpperCase();
+  }
+  
   const displayName = getUserDisplayName(user);
-  const names = displayName.split(' ');
+  if (!displayName || displayName === 'User') {
+    return 'U';
+  }
+  
+  const names = displayName.split(' ').filter(name => name.length > 0);
   
   if (names.length >= 2) {
     return `${names[0][0]}${names[1][0]}`.toUpperCase();
