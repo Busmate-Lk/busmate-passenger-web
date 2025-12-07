@@ -14,18 +14,18 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import SearchForm from "@/components/search/SearchForm";
 import FilterSidebar from "@/components/search/FilterSidebar";
-import { PassengerApIsService } from "@/generated/api-client/route-management";
+import { PassengerQueryService } from "@/generated/api-client/route-management";
 import type { 
-  PassengerTripResponse, 
-  PassengerPaginatedResponsePassengerTripResponse 
+  BusResult,
+  FindMyBusResponse
 } from "@/generated/api-client/route-management";
 
 interface FilterState {
   travelDate: string;
   departureTimeFrom: string;
-  departureTimeTo: string;
   operatorType: 'PRIVATE' | 'CTB' | '';
-  status: string;
+  routeNumber: string;
+  roadType: 'NORMALWAY' | 'EXPRESSWAY' | '';
   sortBy: string;
 }
 
@@ -41,20 +41,22 @@ interface SearchParams {
 const SearchResults = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useState<SearchParams>({});
-  const [trips, setTrips] = useState<PassengerTripResponse[]>([]);
+  const [busResults, setBusResults] = useState<BusResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [totalTrips, setTotalTrips] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
+  const [fromStopName, setFromStopName] = useState<string>('');
+  const [toStopName, setToStopName] = useState<string>('');
   
   // Initialize filters with today's date
   const today = new Date().toISOString().split('T')[0];
   const [filters, setFilters] = useState<FilterState>({
     travelDate: today,
     departureTimeFrom: '',
-    departureTimeTo: '',
     operatorType: '',
-    status: '',
+    routeNumber: '',
+    roadType: '',
     sortBy: 'departure'
   });
 
@@ -97,7 +99,7 @@ const SearchResults = () => {
 
   // Helper function to format duration
   const formatDuration = (minutes?: number) => {
-    if (!minutes) return '';
+    if (!minutes) return 'N/A';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
@@ -106,18 +108,44 @@ const SearchResults = () => {
     return `${mins}m`;
   };
 
-  // Helper function to get bus features as amenities
-  const getBusAmenities = (trip: PassengerTripResponse) => {
-    const amenities: string[] = [];
-    if (trip.bus?.features?.hasAirConditioning) amenities.push('AC');
-    if (trip.bus?.features?.hasWiFi) amenities.push('WiFi');
-    if (trip.bus?.features?.hasToilet) amenities.push('Toilet');
-    if (trip.bus?.features?.isAccessible) amenities.push('Accessible');
-    return amenities;
+  // Helper function to get data mode badge color
+  const getDataModeBadgeVariant = (dataMode?: string) => {
+    switch (dataMode) {
+      case 'REALTIME':
+        return 'default'; // Primary color
+      case 'SCHEDULE':
+        return 'secondary';
+      case 'STATIC':
+        return 'outline';
+      default:
+        return 'outline';
+    }
   };
 
-  // Search trips function
-  const searchTrips = async () => {
+  // Helper function to get departure time based on data mode
+  const getDepartureTime = (bus: BusResult) => {
+    if (bus.dataMode === 'REALTIME' && bus.actualDepartureTime) {
+      return bus.actualDepartureTime;
+    }
+    if (bus.dataMode === 'SCHEDULE' && bus.scheduledDepartureAtOrigin) {
+      return bus.scheduledDepartureAtOrigin;
+    }
+    return null;
+  };
+
+  // Helper function to get arrival time based on data mode
+  const getArrivalTime = (bus: BusResult) => {
+    if (bus.dataMode === 'REALTIME' && bus.actualArrivalTime) {
+      return bus.actualArrivalTime;
+    }
+    if (bus.dataMode === 'SCHEDULE' && bus.scheduledArrivalAtDestination) {
+      return bus.scheduledArrivalAtDestination;
+    }
+    return null;
+  };
+
+  // Search buses function
+  const searchBuses = async () => {
     if (!searchParams.fromStopId || !searchParams.toStopId) {
       setError('Please select valid stops for your journey');
       return;
@@ -127,27 +155,36 @@ const SearchResults = () => {
     setError(null);
 
     try {
-      const response = await PassengerApIsService.searchTrips(
+      const response: FindMyBusResponse = await PassengerQueryService.findMyBus(
         searchParams.fromStopId,
         searchParams.toStopId,
-        undefined, // routeId
         filters.travelDate,
         filters.departureTimeFrom || undefined,
-        filters.departureTimeTo || undefined,
-        filters.operatorType || undefined,
-        undefined, // operatorId
-        filters.status ? filters.status as 'pending' | 'active' | 'in_transit' | 'boarding' | 'departed' | 'completed' | 'cancelled' | 'delayed' : undefined,
-        0, // page
-        20 // size
+        filters.routeNumber || undefined,
+        filters.roadType || undefined,
+        true, // includeScheduledData
+        true  // includeRouteData
       );
 
-      setTrips(response.content || []);
-      setTotalTrips(response.totalElements || 0);
+      // Filter by operator type if selected
+      let filteredResults = response.results || [];
+      if (filters.operatorType) {
+        filteredResults = filteredResults.filter(bus => 
+          bus.operatorName?.toUpperCase().includes(filters.operatorType)
+        );
+      }
+
+      setBusResults(filteredResults);
+      setTotalResults(filteredResults.length);
+      
+      // Store stop names from response
+      if (response.fromStop?.name) setFromStopName(response.fromStop.name);
+      if (response.toStop?.name) setToStopName(response.toStop.name);
     } catch (err) {
-      console.error('Error searching trips:', err);
-      setError('Failed to search trips. Please try again.');
-      setTrips([]);
-      setTotalTrips(0);
+      console.error('Error searching buses:', err);
+      setError('Failed to search buses. Please try again.');
+      setBusResults([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -156,22 +193,30 @@ const SearchResults = () => {
   // Search when params or filters change
   useEffect(() => {
     if (searchParams.fromStopId && searchParams.toStopId) {
-      searchTrips();
+      searchBuses();
     }
   }, [searchParams, filters]);
 
-  // Sort trips based on sortBy filter
-  const sortedTrips = [...trips].sort((a, b) => {
+  // Sort buses based on sortBy filter
+  const sortedBuses = [...busResults].sort((a, b) => {
     switch (filters.sortBy) {
       case 'duration':
-        return (a.duration || 0) - (b.duration || 0);
-      case 'fare':
-        return (a.fare || 0) - (b.fare || 0);
+        return (a.estimatedDurationMinutes || 0) - (b.estimatedDurationMinutes || 0);
+      case 'distance':
+        return (a.distanceKm || 0) - (b.distanceKm || 0);
+      case 'dataMode':
+        // Sort by data mode priority: REALTIME > SCHEDULE > STATIC
+        const modeOrder = { REALTIME: 0, SCHEDULE: 1, STATIC: 2 };
+        const modeA = modeOrder[a.dataMode as keyof typeof modeOrder] ?? 3;
+        const modeB = modeOrder[b.dataMode as keyof typeof modeOrder] ?? 3;
+        return modeA - modeB;
       case 'departure':
       default:
-        // Sort by scheduled departure time
-        if (!a.scheduledDeparture || !b.scheduledDeparture) return 0;
-        return a.scheduledDeparture.localeCompare(b.scheduledDeparture);
+        // Sort by departure time
+        const depA = getDepartureTime(a);
+        const depB = getDepartureTime(b);
+        if (!depA || !depB) return 0;
+        return depA.localeCompare(depB);
     }
   });
 
@@ -238,22 +283,22 @@ const SearchResults = () => {
               <div className="mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground">Available Trips</h2>
-                    {searchParams.fromName || searchParams.toName ? (
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground">Available Buses</h2>
+                    {fromStopName || toStopName ? (
                       <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                        Showing trips {searchParams.fromName && `from ${searchParams.fromName}`}
-                        {searchParams.fromName && searchParams.toName && " "}
-                        {searchParams.toName && `to ${searchParams.toName}`}
+                        Showing buses {fromStopName && `from ${fromStopName}`}
+                        {fromStopName && toStopName && " "}
+                        {toStopName && `to ${toStopName}`}
                       </p>
                     ) : (
                       <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                        Please search for trips
+                        Please search for buses
                       </p>
                     )}
                   </div>
                   {!loading && (
                     <Badge variant="secondary" className="text-sm self-start sm:self-center">
-                      {totalTrips} trips found
+                      {totalResults} {totalResults === 1 ? 'bus' : 'buses'} found
                     </Badge>
                   )}
                 </div>
@@ -263,7 +308,7 @@ const SearchResults = () => {
               {loading && (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2 text-muted-foreground">Searching trips...</span>
+                  <span className="ml-2 text-muted-foreground">Searching buses...</span>
                 </div>
               )}
 
@@ -280,15 +325,15 @@ const SearchResults = () => {
                 </Card>
               )}
 
-              {/* Trip Cards */}
+              {/* Bus Cards */}
               {!loading && !error && (
                 <div className="space-y-4">
-                  {sortedTrips.length > 0 ? (
-                    sortedTrips.map((trip) => (
-                      <Card key={trip.tripId} className="hover:shadow-soft transition-all duration-300 border border-border w-full">
+                  {sortedBuses.length > 0 ? (
+                    sortedBuses.map((bus, index) => (
+                      <Card key={bus.tripId || bus.scheduleId || `${bus.routeId}-${index}`} className="hover:shadow-soft transition-all duration-300 border border-border w-full">
                         <CardContent className="p-4 sm:p-6">
                           <div className="flex flex-col gap-4">
-                            {/* Trip Info */}
+                            {/* Bus Info */}
                             <div className="w-full">
                               <div className="flex items-start gap-3 mb-3">
                                 <div className="p-2 rounded-lg bg-gradient-primary flex-shrink-0">
@@ -296,103 +341,149 @@ const SearchResults = () => {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                                    {trip.bus?.plateNumber && `Bus ${trip.bus.plateNumber}`}
-                                    {trip.operator?.name && ` - ${trip.operator.name}`}
+                                    {bus.routeNumber && `Route ${bus.routeNumber}`}
+                                    {bus.routeName && ` - ${bus.routeName}`}
                                   </h3>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                    <Badge variant={trip.operator?.type === "PRIVATE" ? "default" : "secondary"} className="text-xs">
-                                      {trip.operator?.type || 'Unknown'}
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
+                                    <Badge variant={getDataModeBadgeVariant(bus.dataMode)} className="text-xs">
+                                      {bus.dataMode || 'STATIC'}
                                     </Badge>
-                                    {trip.status && (
+                                    {bus.operatorName && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {bus.operatorName}
+                                      </Badge>
+                                    )}
+                                    {bus.roadType && (
                                       <Badge variant="outline" className="text-xs">
-                                        {trip.status}
+                                        {bus.roadType}
+                                      </Badge>
+                                    )}
+                                    {bus.tripStatus && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {bus.tripStatus}
                                       </Badge>
                                     )}
                                   </div>
+                                  {bus.routeThrough && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Via: {bus.routeThrough}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
 
                               <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-4 text-sm text-muted-foreground mb-3">
                                 <div className="flex items-center gap-1">
                                   <MapPin className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{trip.departureStop?.name || searchParams.fromName}</span>
+                                  <span className="truncate">{fromStopName || 'Origin'}</span>
                                 </div>
                                 <ArrowRight className="h-4 w-4 hidden sm:block flex-shrink-0" />
                                 <div className="flex items-center gap-1">
                                   <MapPin className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{trip.arrivalStop?.name || searchParams.toName}</span>
+                                  <span className="truncate">{toStopName || 'Destination'}</span>
                                 </div>
+                                {bus.distanceKm && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {bus.distanceKm.toFixed(1)} km
+                                  </Badge>
+                                )}
                               </div>
 
-                              {/* Amenities */}
-                              {getBusAmenities(trip).length > 0 && (
+                              {/* Bus Details */}
+                              {(bus.busPlateNumber || bus.busModel || bus.busCapacity) && (
                                 <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
-                                  {getBusAmenities(trip).map((amenity) => (
-                                    <Badge key={amenity} variant="outline" className="text-xs">
-                                      {amenity}
+                                  {bus.busPlateNumber && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {bus.busPlateNumber}
                                     </Badge>
-                                  ))}
+                                  )}
+                                  {bus.busModel && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {bus.busModel}
+                                    </Badge>
+                                  )}
+                                  {bus.busCapacity && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Capacity: {bus.busCapacity}
+                                    </Badge>
+                                  )}
                                 </div>
+                              )}
+
+                              {/* Status Message */}
+                              {bus.statusMessage && (
+                                <p className="text-sm text-muted-foreground italic">
+                                  {bus.statusMessage}
+                                </p>
                               )}
                             </div>
 
-                            {/* Time and Fare Info */}
+                            {/* Time Info */}
                             <div className="w-full">
                               <div className="flex flex-col sm:flex-row gap-4">
-                                {/* Time Info */}
+                                {/* Time Details */}
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between sm:justify-start sm:gap-4 text-sm">
-                                    <div className="text-center">
-                                      <div className="text-base sm:text-lg font-semibold text-foreground">
-                                        {formatTime(trip.scheduledDeparture)}
+                                    {getDepartureTime(bus) ? (
+                                      <>
+                                        <div className="text-center">
+                                          <div className="text-base sm:text-lg font-semibold text-foreground">
+                                            {formatTime(getDepartureTime(bus)!)}
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'} Departure
+                                          </div>
+                                        </div>
+                                        {bus.estimatedDurationMinutes && (
+                                          <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Clock className="h-4 w-4" />
+                                            <span className="text-xs sm:text-sm">
+                                              {formatDuration(bus.estimatedDurationMinutes)}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {getArrivalTime(bus) && (
+                                          <div className="text-center">
+                                            <div className="text-base sm:text-lg font-semibold text-foreground">
+                                              {formatTime(getArrivalTime(bus)!)}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                              {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'} Arrival
+                                            </div>
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground">
+                                        <p>Time information not available</p>
+                                        {bus.estimatedDurationMinutes && (
+                                          <div className="flex items-center gap-1 mt-1">
+                                            <Clock className="h-4 w-4" />
+                                            <span>Estimated duration: {formatDuration(bus.estimatedDurationMinutes)}</span>
+                                          </div>
+                                        )}
                                       </div>
-                                      <div className="text-xs text-muted-foreground">Departure</div>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Clock className="h-4 w-4" />
-                                      <span className="text-xs sm:text-sm">
-                                        {formatDuration(trip.duration)}
-                                      </span>
-                                    </div>
-                                    <div className="text-center">
-                                      <div className="text-base sm:text-lg font-semibold text-foreground">
-                                        {formatTime(trip.scheduledArrival)}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground">Arrival</div>
-                                    </div>
+                                    )}
                                   </div>
                                 </div>
                                 
-                                {/* Fare and Buttons */}
-                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:flex-shrink-0">
-                                  <div className="text-left sm:text-right">
-                                    <div className="text-lg sm:text-xl font-bold text-primary">
-                                      {trip.fare ? `Rs. ${trip.fare}` : 'Price TBA'}
-                                    </div>
-                                    <div className="text-xs sm:text-sm text-muted-foreground">per person</div>
-                                    {trip.availableSeats && (
-                                      <div className="text-xs text-muted-foreground">
-                                        {trip.availableSeats} seats available
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-2">
+                                {/* Action Buttons */}
+                                <div className="flex items-center justify-end gap-3 sm:flex-shrink-0">
+                                  <Button 
+                                    variant="outline" 
+                                    className="px-3 py-2 text-sm"
+                                    onClick={() => window.location.href = `/route/${bus.routeId}`}
+                                  >
+                                    View Route
+                                  </Button>
+                                  {bus.tripId && bus.dataMode === 'REALTIME' && (
                                     <Button 
-                                      variant="outline" 
-                                      className="px-3 py-2 text-sm"
-                                      onClick={() => window.location.href = `/trip/${trip.tripId}`}
+                                      className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
+                                      onClick={() => window.location.href = `/trip/${bus.tripId}`}
                                     >
-                                      View Trip
+                                      Track Live
                                     </Button>
-                                    {trip.bookingAvailable && (
-                                      <Button 
-                                        className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                        onClick={() => window.location.href = `/booking/${trip.tripId}`}
-                                      >
-                                        Book Now
-                                      </Button>
-                                    )}
-                                  </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -405,7 +496,7 @@ const SearchResults = () => {
                       <CardContent>
                         <div className="text-muted-foreground">
                           <Bus className="h-8 sm:h-12 w-8 sm:w-12 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-base sm:text-lg font-semibold mb-2">No trips found</h3>
+                          <h3 className="text-base sm:text-lg font-semibold mb-2">No buses found</h3>
                           <p className="text-sm sm:text-base">Try adjusting your search criteria or filters.</p>
                         </div>
                       </CardContent>
@@ -415,8 +506,8 @@ const SearchResults = () => {
                       <CardContent>
                         <div className="text-muted-foreground">
                           <Bus className="h-8 sm:h-12 w-8 sm:w-12 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-base sm:text-lg font-semibold mb-2">Search for trips</h3>
-                          <p className="text-sm sm:text-base">Please use the search form above to find available trips.</p>
+                          <h3 className="text-base sm:text-lg font-semibold mb-2">Search for buses</h3>
+                          <p className="text-sm sm:text-base">Please use the search form above to find available buses.</p>
                         </div>
                       </CardContent>
                     </Card>
