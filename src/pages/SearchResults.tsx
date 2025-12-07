@@ -14,11 +14,11 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import SearchForm from "@/components/search/SearchForm";
 import FilterSidebar from "@/components/search/FilterSidebar";
-import { PassengerApIsService } from "@/lib/api-client/route-management";
+import { PassengerApIsService } from "@/generated/api-client/route-management";
 import type { 
   PassengerTripResponse, 
   PassengerPaginatedResponsePassengerTripResponse 
-} from "@/lib/api-client/route-management";
+} from "@/generated/api-client/route-management";
 
 interface FilterState {
   travelDate: string;

@@ -23,8 +23,9 @@
 
     "baseUrl": ".",
     "paths": {
+      "@/generated/*": ["./generated/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "generated/api-client/route-management", "generated/api-client/user-management"]
 }

@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { PassengerApIsService } from "@/lib/api-client/route-management";
-import type { PassengerStopResponse } from "@/lib/api-client/route-management";
+import { PassengerApIsService } from "@/generated/api-client/route-management";
+import type { PassengerStopResponse } from "@/generated/api-client/route-management";
 
 interface SearchFormProps {
   variant?: "hero" | "page";

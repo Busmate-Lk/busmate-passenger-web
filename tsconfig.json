@@ -4,6 +4,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@/generated/*": ["./generated/*"],
       "@/*": ["./src/*"]
     },
     "noImplicitAny": false,
