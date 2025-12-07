@@ -17,9 +17,7 @@ import {
 } from "lucide-react";
 
 interface FilterState {
-  travelDate: string;
   departureTimeFrom: string;
-  operatorType: 'PRIVATE' | 'CTB' | '';
   routeNumber: string;
   roadType: 'NORMALWAY' | 'EXPRESSWAY' | '';
   sortBy: string;
@@ -31,12 +29,6 @@ interface FilterSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
 }
-
-const operatorTypes = [
-  { id: "", label: "All Operators" },
-  { id: "PRIVATE", label: "Private" },
-  { id: "CTB", label: "CTB (SLTB)" }
-];
 
 const roadTypes = [
   { id: "", label: "All Road Types" },
@@ -57,11 +49,8 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
   };
 
   const clearAllFilters = () => {
-    const today = new Date().toISOString().split('T')[0];
     onFiltersChange({
-      travelDate: today,
       departureTimeFrom: '',
-      operatorType: '',
       routeNumber: '',
       roadType: '',
       sortBy: 'departure'
@@ -70,10 +59,8 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
 
   const activeFiltersCount = 
     (filters.departureTimeFrom ? 1 : 0) + 
-    (filters.operatorType ? 1 : 0) + 
     (filters.routeNumber ? 1 : 0) + 
-    (filters.roadType ? 1 : 0) + 
-    (filters.travelDate !== new Date().toISOString().split('T')[0] ? 1 : 0);
+    (filters.roadType ? 1 : 0);
 
   return (
     <>
@@ -132,7 +119,7 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <Accordion type="multiple" defaultValue={["travel-date", "operator", "time"]} className="w-full">
+            <Accordion type="multiple" defaultValue={["travel-date", "time"]} className="w-full">
               
               {/* Sort By */}
               <AccordionItem value="sort">
@@ -152,57 +139,6 @@ const FilterSidebar = ({ filters, onFiltersChange, isOpen, onToggle }: FilterSid
                       ))}
                     </SelectContent>
                   </Select>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Travel Date */}
-              <AccordionItem value="travel-date">
-                <AccordionTrigger className="text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Travel Date
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    <Label htmlFor="travel-date" className="text-sm">Select Date</Label>
-                    <Input
-                      id="travel-date"
-                      type="date"
-                      value={filters.travelDate}
-                      onChange={(e) => updateFilter('travelDate', e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Operator Type */}
-              <AccordionItem value="operator">
-                <AccordionTrigger className="text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <Bus className="h-4 w-4" />
-                    Operator Type
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3">
-                    {operatorTypes.map((operator) => (
-                      <div key={operator.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`operator-${operator.id}`}
-                          checked={filters.operatorType === operator.id}
-                          onCheckedChange={() => updateFilter('operatorType', operator.id)}
-                        />
-                        <label
-                          htmlFor={`operator-${operator.id}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          {operator.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
                 </AccordionContent>
               </AccordionItem>
 

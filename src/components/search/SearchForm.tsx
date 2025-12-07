@@ -13,6 +13,7 @@ interface SearchFormProps {
   initialToText?: string;
   initialFromStopId?: string;
   initialToStopId?: string;
+  initialDate?: string;
 }
 
 interface StopOption {
@@ -27,11 +28,14 @@ const SearchForm = ({
   initialToText,
   initialFromStopId,
   initialToStopId,
+  initialDate,
 }: SearchFormProps) => {
+  const today = new Date().toISOString().split('T')[0];
   const [fromText, setFromText] = useState(initialFromText || "");
   const [toText, setToText] = useState(initialToText || "");
   const [fromStopId, setFromStopId] = useState(initialFromStopId || "");
   const [toStopId, setToStopId] = useState(initialToStopId || "");
+  const [travelDate, setTravelDate] = useState(initialDate || today);
   const [fromStops, setFromStops] = useState<StopOption[]>([]);
   const [toStops, setToStops] = useState<StopOption[]>([]);
   const [fromLoading, setFromLoading] = useState(false);
@@ -173,15 +177,16 @@ const SearchForm = ({
     if (initialToText !== undefined) setToText(initialToText);
     if (initialFromStopId !== undefined) setFromStopId(initialFromStopId);
     if (initialToStopId !== undefined) setToStopId(initialToStopId);
-  }, [initialFromText, initialToText, initialFromStopId, initialToStopId]);
+    if (initialDate !== undefined) setTravelDate(initialDate);
+  }, [initialFromText, initialToText, initialFromStopId, initialToStopId, initialDate]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (fromStopId && toStopId) {
-      navigate(`/search?fromStopId=${encodeURIComponent(fromStopId)}&toStopId=${encodeURIComponent(toStopId)}&fromName=${encodeURIComponent(fromText)}&toName=${encodeURIComponent(toText)}`);
+      navigate(`/search?fromStopId=${encodeURIComponent(fromStopId)}&toStopId=${encodeURIComponent(toStopId)}&fromName=${encodeURIComponent(fromText)}&toName=${encodeURIComponent(toText)}&date=${travelDate}`);
     } else if (fromText.trim() || toText.trim()) {
       // Fallback for partial text search
-      navigate(`/search?fromText=${encodeURIComponent(fromText)}&toText=${encodeURIComponent(toText)}`);
+      navigate(`/search?fromText=${encodeURIComponent(fromText)}&toText=${encodeURIComponent(toText)}&date=${travelDate}`);
     }
   };
 
@@ -258,6 +263,15 @@ const SearchForm = ({
           )}
         </div>
 
+        <div className="flex-1 relative">
+          <Input
+            type="date"
+            value={travelDate}
+            onChange={(e) => setTravelDate(e.target.value)}
+            className={`${isHero ? "h-14 text-lg rounded-2xl" : "h-12 rounded-xl"} bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
+          />
+        </div>
+
         <Button
           type="submit"
           size={isHero ? "lg" : "default"}
@@ -265,7 +279,7 @@ const SearchForm = ({
           className={`${isHero ? "h-14 px-10 text-lg rounded-2xl" : "h-12 px-6 rounded-xl"} bg-gradient-primary hover:shadow-glow hover:scale-105 transition-all duration-300 shadow-elegant font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
         >
           <Search className="mr-2 h-5 w-5" />
-          Search Routes
+          Find My Bus
         </Button>
       </div>
 

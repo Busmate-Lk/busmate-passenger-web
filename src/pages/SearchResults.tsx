@@ -21,9 +21,7 @@ import type {
 } from "@/generated/api-client/route-management";
 
 interface FilterState {
-  travelDate: string;
   departureTimeFrom: string;
-  operatorType: 'PRIVATE' | 'CTB' | '';
   routeNumber: string;
   roadType: 'NORMALWAY' | 'EXPRESSWAY' | '';
   sortBy: string;
@@ -36,6 +34,7 @@ interface SearchParams {
   toName?: string;
   fromText?: string;
   toText?: string;
+  date?: string;
 }
 
 const SearchResults = () => {
@@ -49,12 +48,9 @@ const SearchResults = () => {
   const [fromStopName, setFromStopName] = useState<string>('');
   const [toStopName, setToStopName] = useState<string>('');
   
-  // Initialize filters with today's date
-  const today = new Date().toISOString().split('T')[0];
+  // Initialize filters
   const [filters, setFilters] = useState<FilterState>({
-    travelDate: today,
     departureTimeFrom: '',
-    operatorType: '',
     routeNumber: '',
     roadType: '',
     sortBy: 'departure'
@@ -69,6 +65,7 @@ const SearchResults = () => {
     const toName = urlParams.get("toName") || undefined;
     const fromText = urlParams.get("fromText") || undefined;
     const toText = urlParams.get("toText") || undefined;
+    const date = urlParams.get("date") || undefined;
     
     setSearchParams({ 
       fromStopId, 
@@ -76,7 +73,8 @@ const SearchResults = () => {
       fromName, 
       toName, 
       fromText, 
-      toText 
+      toText,
+      date
     });
   }, [location.search]);
 
@@ -158,7 +156,7 @@ const SearchResults = () => {
       const response: FindMyBusResponse = await PassengerQueryService.findMyBus(
         searchParams.fromStopId,
         searchParams.toStopId,
-        filters.travelDate,
+        searchParams.date || undefined,
         filters.departureTimeFrom || undefined,
         filters.routeNumber || undefined,
         filters.roadType || undefined,
@@ -166,16 +164,8 @@ const SearchResults = () => {
         true  // includeRouteData
       );
 
-      // Filter by operator type if selected
-      let filteredResults = response.results || [];
-      if (filters.operatorType) {
-        filteredResults = filteredResults.filter(bus => 
-          bus.operatorName?.toUpperCase().includes(filters.operatorType)
-        );
-      }
-
-      setBusResults(filteredResults);
-      setTotalResults(filteredResults.length);
+      setBusResults(response.results || []);
+      setTotalResults(response.results?.length || 0);
       
       // Store stop names from response
       if (response.fromStop?.name) setFromStopName(response.fromStop.name);
@@ -245,6 +235,7 @@ const SearchResults = () => {
               initialToText={searchParams.toText || searchParams.toName}
               initialFromStopId={searchParams.fromStopId}
               initialToStopId={searchParams.toStopId}
+              initialDate={searchParams.date}
             />
           </div>
         </div>
@@ -469,19 +460,20 @@ const SearchResults = () => {
                                 
                                 {/* Action Buttons */}
                                 <div className="flex items-center justify-end gap-3 sm:flex-shrink-0">
-                                  <Button 
-                                    variant="outline" 
-                                    className="px-3 py-2 text-sm"
-                                    onClick={() => window.location.href = `/route/${bus.routeId}`}
-                                  >
-                                    View Route
-                                  </Button>
-                                  {bus.tripId && bus.dataMode === 'REALTIME' && (
+                                  {bus.dataMode === 'REALTIME' || bus.dataMode === 'SCHEDULE' ? (
                                     <Button 
                                       className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/trip/${bus.tripId}`}
+                                      onClick={() => window.location.href = `/trip/${bus.tripId || bus.scheduleId}`}
                                     >
-                                      Track Live
+                                      View Info
+                                    </Button>
+                                  ) : (
+                                    <Button 
+                                      variant="outline" 
+                                      className="px-3 py-2 text-sm"
+                                      onClick={() => window.location.href = `/route/${bus.routeId}`}
+                                    >
+                                      View Route
                                     </Button>
                                   )}
                                 </div>
