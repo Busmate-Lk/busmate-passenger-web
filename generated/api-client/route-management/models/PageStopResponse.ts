@@ -8,14 +8,14 @@ import type { StopResponse } from './StopResponse';
 export type PageStopResponse = {
     totalElements?: number;
     totalPages?: number;
+    pageable?: Pageablenull;
     size?: number;
     content?: Array<StopResponse>;
     number?: number;
     sort?: Sortnull;
-    numberOfElements?: number;
-    pageable?: Pageablenull;
     first?: boolean;
     last?: boolean;
+    numberOfElements?: number;
     empty?: boolean;
 };
 

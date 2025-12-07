@@ -2,9 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Sortnull = {
-    sorted?: boolean;
-    empty?: boolean;
-    unsorted?: boolean;
+export type ImportedStop = {
+    id?: string;
+    name?: string;
+    originalStopId?: string;
+    rowNumber?: number;
 };
 

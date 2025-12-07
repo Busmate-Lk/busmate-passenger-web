@@ -2,12 +2,15 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { RouteRequest } from './RouteRequest';
-export type RouteGroupRequest = {
-    name: string;
+import type { LocationDto } from './LocationDto';
+/**
+ * Stop information summary
+ */
+export type StopInfo = {
+    id?: string;
+    name?: string;
     nameSinhala?: string;
     nameTamil?: string;
-    description?: string;
-    routes?: Array<RouteRequest>;
+    location?: LocationDto;
 };
 

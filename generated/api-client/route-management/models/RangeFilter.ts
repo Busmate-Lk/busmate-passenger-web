@@ -2,9 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Sortnull = {
-    sorted?: boolean;
-    empty?: boolean;
-    unsorted?: boolean;
+export type RangeFilter = {
+    min?: number;
+    max?: number;
+    average?: number;
+    count?: number;
 };
 

@@ -3,11 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ImportError } from './ImportError';
-export type RouteImportResponse = {
+import type { ImportSummary } from './ImportSummary';
+import type { ImportWarning } from './ImportWarning';
+export type RouteUnifiedImportResponse = {
     totalRecords?: number;
     successfulImports?: number;
     failedImports?: number;
+    skippedRecords?: number;
     errors?: Array<ImportError>;
+    warnings?: Array<ImportWarning>;
     message?: string;
+    summary?: ImportSummary;
 };
 

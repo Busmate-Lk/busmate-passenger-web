@@ -8,14 +8,14 @@ import type { TripResponse } from './TripResponse';
 export type PageTripResponse = {
     totalElements?: number;
     totalPages?: number;
+    pageable?: Pageablenull;
     size?: number;
     content?: Array<TripResponse>;
     number?: number;
     sort?: Sortnull;
-    numberOfElements?: number;
-    pageable?: Pageablenull;
     first?: boolean;
     last?: boolean;
+    numberOfElements?: number;
     empty?: boolean;
 };
 
