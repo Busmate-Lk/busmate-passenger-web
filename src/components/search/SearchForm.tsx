@@ -183,10 +183,10 @@ const SearchForm = ({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (fromStopId && toStopId) {
-      navigate(`/search?fromStopId=${encodeURIComponent(fromStopId)}&toStopId=${encodeURIComponent(toStopId)}&fromName=${encodeURIComponent(fromText)}&toName=${encodeURIComponent(toText)}&date=${travelDate}`);
+      navigate(`/findmybus?fromStopId=${encodeURIComponent(fromStopId)}&toStopId=${encodeURIComponent(toStopId)}&fromName=${encodeURIComponent(fromText)}&toName=${encodeURIComponent(toText)}&date=${travelDate}`);
     } else if (fromText.trim() || toText.trim()) {
       // Fallback for partial text search
-      navigate(`/search?fromText=${encodeURIComponent(fromText)}&toText=${encodeURIComponent(toText)}&date=${travelDate}`);
+      navigate(`/findmybus?fromText=${encodeURIComponent(fromText)}&toText=${encodeURIComponent(toText)}&date=${travelDate}`);
     }
   };
 
