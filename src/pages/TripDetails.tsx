@@ -142,7 +142,7 @@ const TripDetails = () => {
             <h1 className="text-2xl font-bold text-foreground mb-4">Error Loading Trip</h1>
             <p className="text-muted-foreground mb-4">{error}</p>
             <div className="space-x-4">
-              <Button onClick={() => navigate("/search")} className="bg-gradient-primary">
+              <Button onClick={() => navigate("/findmybus")} className="bg-gradient-primary">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Search
               </Button>
@@ -163,7 +163,7 @@ const TripDetails = () => {
         <div className="pt-24 container mx-auto px-4">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground mb-4">Trip Not Found</h1>
-            <Button onClick={() => navigate("/search")} className="bg-gradient-primary">
+            <Button onClick={() => navigate("/findmybus")} className="bg-gradient-primary">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Search
             </Button>
@@ -209,7 +209,7 @@ const TripDetails = () => {
           <div className="mx-auto">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/search")}
+          onClick={() => navigate("/findmybus")}
           className="text-white hover:bg-white/10 mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

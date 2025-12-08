@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bus, Clock, MapPin, Star, Users, Shield, Zap } from "lucide-react";
 
-const Index = () => {
+const HomePage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -184,4 +184,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default HomePage;

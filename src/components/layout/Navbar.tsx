@@ -41,7 +41,7 @@ const Navbar = () => {
             <Link to="/" className={`transition-colors ${
               isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
             }`}>Home</Link>
-            <Link to="/search" className={`transition-colors ${
+            <Link to="/findmybus" className={`transition-colors ${
               isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
             }`}>Routes</Link>
             {/* Public site: no auth UI */}
@@ -62,7 +62,7 @@ const Navbar = () => {
               <Link to="/" className="text-foreground hover:text-primary transition-colors">
                 Home
               </Link>
-              <Link to="/search" className="text-foreground hover:text-primary transition-colors">
+              <Link to="/findmybus" className="text-foreground hover:text-primary transition-colors">
                 Search Routes
               </Link>
               {/* No auth buttons in mobile menu - public site */}

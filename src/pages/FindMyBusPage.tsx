@@ -37,7 +37,7 @@ interface SearchParams {
   date?: string;
 }
 
-const SearchResults = () => {
+const FindMyBusPage = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useState<SearchParams>({});
   const [busResults, setBusResults] = useState<BusResult[]>([]);
@@ -514,4 +514,4 @@ const SearchResults = () => {
   );
 };
 
-export default SearchResults;
+export default FindMyBusPage;
