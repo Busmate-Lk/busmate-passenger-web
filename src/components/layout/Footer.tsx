@@ -37,7 +37,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-slate-300">
               <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-              <li><a href="/search" className="hover:text-white transition-colors">Route Search</a></li>
+              <li><a href="/findmybus" className="hover:text-white transition-colors">Route Search</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Live Tracking</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Mobile App</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
