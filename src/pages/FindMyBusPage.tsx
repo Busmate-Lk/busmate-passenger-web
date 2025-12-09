@@ -460,12 +460,19 @@ const FindMyBusPage = () => {
                                 
                                 {/* Action Buttons */}
                                 <div className="flex items-center justify-end gap-3 sm:flex-shrink-0">
-                                  {bus.dataMode === 'REALTIME' || bus.dataMode === 'SCHEDULE' ? (
+                                  {bus.dataMode === 'REALTIME' && bus.tripId ? (
                                     <Button 
                                       className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/trip/${bus.tripId || bus.scheduleId}`}
+                                      onClick={() => window.location.href = `/findmybus/trip/${bus.tripId}`}
                                     >
-                                      View Info
+                                      View Trip
+                                    </Button>
+                                  ) : bus.dataMode === 'SCHEDULE' && bus.scheduleId ? (
+                                    <Button 
+                                      className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
+                                      onClick={() => window.location.href = `/findmybus/schedule/${bus.scheduleId}?date=${searchParams.date || new Date().toISOString().split('T')[0]}`}
+                                    >
+                                      View Schedule
                                     </Button>
                                   ) : (
                                     <Button 
