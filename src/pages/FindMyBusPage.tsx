@@ -463,14 +463,14 @@ const FindMyBusPage = () => {
                                   {bus.dataMode === 'REALTIME' && bus.tripId ? (
                                     <Button 
                                       className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/findmybus/trip/${bus.tripId}`}
+                                      onClick={() => window.location.href = `/findmybus/detail?type=trip&id=${bus.tripId}`}
                                     >
                                       View Trip
                                     </Button>
                                   ) : bus.dataMode === 'SCHEDULE' && bus.scheduleId ? (
                                     <Button 
                                       className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/findmybus/schedule/${bus.scheduleId}?date=${searchParams.date || new Date().toISOString().split('T')[0]}`}
+                                      onClick={() => window.location.href = `/findmybus/detail?type=schedule&id=${bus.scheduleId}&date=${searchParams.date || new Date().toISOString().split('T')[0]}`}
                                     >
                                       View Schedule
                                     </Button>

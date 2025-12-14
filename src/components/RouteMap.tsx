@@ -219,12 +219,9 @@ const RouteMap: React.FC<RouteMapProps> = ({ stops, routeName }) => {
       )}
       <div
         ref={mapRef}
-        className="w-full h-64 rounded-lg border"
-        style={{ minHeight: "16rem" }}
+        className="w-full h-96 rounded-lg border"
+        style={{ minHeight: "20rem" }}
       />
-      <div className="mt-2 text-xs text-muted-foreground text-center">
-        {routeName} - Interactive Route Map
-      </div>
     </div>
   );
 };
