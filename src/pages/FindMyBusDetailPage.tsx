@@ -373,7 +373,7 @@ const FindMyBusDetailPage = () => {
           {/* Left Column: Stop List */}
           <Card>
             <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Stop List</h2>
                 <Select value={stopViewMode} onValueChange={(value) => setStopViewMode(value as StopViewMode)}>
                   <SelectTrigger className="w-[200px]">
@@ -387,81 +387,66 @@ const FindMyBusDetailPage = () => {
                 </Select>
               </div>
 
-              <div className="max-h-[400px] overflow-y-auto">
+              <div className="max-h-[500px] overflow-y-auto pr-2">
                 {filteredStops.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {filteredStops.map((stop, index) => (
-                      <div key={stop.id || index} className="flex items-start gap-3">
-                        {/* Timeline */}
-                        <div className="flex flex-col items-center">
-                          <div className={`w-3 h-3 rounded-full ${
-                            index === 0 ? 'bg-green-500' : 
-                            index === filteredStops.length - 1 ? 'bg-red-500' : 
-                            'bg-blue-500'
-                          }`} />
-                          {index < filteredStops.length - 1 && (
-                            <div className="w-0.5 h-12 bg-border mt-1" />
-                          )}
+                      <div key={stop.id || index} className="flex gap-4">
+                        {/* Time Column */}
+                        <div className="flex-shrink-0 w-16">
+                          <div className="text-lg font-semibold text-foreground">
+                            {formatTime(stop.departureTime || stop.arrivalTime) || '-'}
+                          </div>
                         </div>
 
-                        {/* Stop Info */}
-                        <div className="flex-1 pb-4">
-                          {stopViewMode === 'arrival-departure' ? (
-                            <div className="grid grid-cols-3 gap-2 items-start">
-                              <div className="text-sm">
-                                <span className="text-muted-foreground">Arrive: </span>
-                                <span className="font-medium">
-                                  {stop.arrivalTime ? formatTime(stop.arrivalTime) : '-'}
-                                </span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="text-muted-foreground">Depart: </span>
-                                <span className="font-medium">
-                                  {stop.departureTime ? formatTime(stop.departureTime) : '-'}
-                                </span>
-                              </div>
-                              <div className="col-span-3">
-                                <p className="font-medium">{stop.stopName}</p>
-                              </div>
+                        {/* Timeline & Stop Info */}
+                        <div className="flex flex-col flex-1">
+                          <div className="flex items-start gap-3">
+                            {/* Timeline Indicator */}
+                            <div className="flex flex-col items-center pt-0.5">
+                              <div className={`w-3 h-3 rounded-full ${
+                                index === 0 ? 'bg-green-500' : 
+                                index === filteredStops.length - 1 ? 'bg-red-500' : 
+                                'bg-blue-500'
+                              }`} />
+                              {index < filteredStops.length - 1 && (
+                                <div className="w-0.5 h-9 bg-border mt-1" />
+                              )}
                             </div>
-                          ) : stopViewMode === 'all' ? (
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="text-sm text-muted-foreground">Stop {stop.stopOrder}</p>
-                                <p className="font-medium">{stop.stopName}</p>
-                              </div>
-                              <div className="text-right text-sm">
-                                {stop.arrivalTime && (
+
+                            {/* Stop Details */}
+                            <div className="flex-1 min-w-0 bg-gray-200/60 px-3 py-2 rounded-sm">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {stop.stopName}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Stop {stop.stopOrder}
+                              </p>
+                              
+                              {stopViewMode === 'arrival-departure' && (
+                                <div className="flex gap-4 mt-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Arr: </span>
-                                    {formatTime(stop.arrivalTime)}
+                                    <span className="font-medium">
+                                      {stop.arrivalTime ? formatTime(stop.arrivalTime) : '-'}
+                                    </span>
                                   </div>
-                                )}
-                                {stop.departureTime && (
                                   <div>
                                     <span className="text-muted-foreground">Dep: </span>
-                                    {formatTime(stop.departureTime)}
+                                    <span className="font-medium">
+                                      {stop.departureTime ? formatTime(stop.departureTime) : '-'}
+                                    </span>
                                   </div>
-                                )}
-                                {!stop.arrivalTime && !stop.departureTime && (
-                                  <span className="text-muted-foreground">-</span>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
-                          ) : (
-                            <div className="flex justify-between items-start">
-                              <p className="font-medium">{stop.stopName}</p>
-                              <p className="text-sm font-medium">
-                                {formatTime(stop.departureTime || stop.arrivalTime)}
-                              </p>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-12 text-muted-foreground">
                     <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>No stops available for this view mode</p>
                   </div>
