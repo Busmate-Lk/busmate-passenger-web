@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   Bus, 
@@ -17,7 +18,8 @@ import {
   Wind,
   Battery,
   Users,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -40,6 +42,7 @@ interface DetailData {
   duration?: number;
   // Schedule data
   operatingDays?: string[];
+  scheduleExceptions?: any[];
   // Bus data
   busPlateNumber?: string;
   busModel?: string;
@@ -71,6 +74,7 @@ const FindMyBusDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DetailData | null>(null);
   const [stopViewMode, setStopViewMode] = useState<StopViewMode>('timings');
+  const [showExceptions, setShowExceptions] = useState(false);
 
   // Fetch data based on type
   useEffect(() => {
@@ -111,6 +115,7 @@ const FindMyBusDetailPage = () => {
             departureTime: tripResponse.scheduledDepartureTime || tripResponse.actualDepartureTime,
             arrivalTime: tripResponse.scheduledArrivalTime || tripResponse.actualArrivalTime,
             operatingDays: scheduleData?.scheduleCalendars ? getOperatingDays(scheduleData.scheduleCalendars) : [],
+            scheduleExceptions: scheduleData?.scheduleExceptions,
             busPlateNumber: tripResponse.busPlateNumber,
             busModel: tripResponse.busModel,
             operatorName: tripResponse.operatorName,
@@ -131,6 +136,7 @@ const FindMyBusDetailPage = () => {
             departureTime: firstStop?.departureTime,
             arrivalTime: lastStop?.arrivalTime,
             operatingDays: scheduleResponse.scheduleCalendars ? getOperatingDays(scheduleResponse.scheduleCalendars) : [],
+            scheduleExceptions: scheduleResponse.scheduleExceptions,
             stops,
           };
         }
@@ -174,7 +180,11 @@ const FindMyBusDetailPage = () => {
   };
 
   const getOperatingDays = (calendar: ScheduleCalendarResponse[]): string[] => {
-    if (!calendar || calendar.length === 0) return [];
+    // Default all 7 weekdays
+    const defaultDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
+    if (!calendar || calendar.length === 0) return defaultDays;
+    
     const cal = calendar[0];
     const days: string[] = [];
     if (cal.monday) days.push('Mon');
@@ -184,7 +194,21 @@ const FindMyBusDetailPage = () => {
     if (cal.friday) days.push('Fri');
     if (cal.saturday) days.push('Sat');
     if (cal.sunday) days.push('Sun');
-    return days;
+    
+    // If no days are configured, return default all 7 days
+    return days.length > 0 ? days : defaultDays;
+  };
+
+  const getDayOfWeekIndex = () => {
+    const date = new Date(dateParam);
+    return date.getDay();
+  };
+
+  const isOperatingToday = (): boolean => {
+    if (!data?.operatingDays || data.operatingDays.length === 0) return false;
+    const dayIndex = getDayOfWeekIndex();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return data.operatingDays.includes(dayNames[dayIndex]);
   };
 
   const calculateDuration = () => {
@@ -462,17 +486,47 @@ const FindMyBusDetailPage = () => {
               <Card>
                 <CardContent className="p-4 md:p-6">
                   <h2 className="text-xl font-semibold mb-4">Schedule Details</h2>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    {/* Operating Days */}
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">Operating Days</p>
                       <div className="flex flex-wrap gap-2">
                         {data.operatingDays.map((day) => (
-                          <Badge key={day} variant="secondary">
+                          <Badge key={day} variant="secondary" className="px-2.5 py-1">
                             {day}
                           </Badge>
                         ))}
                       </div>
                     </div>
+
+                    {/* Operating Today */}
+                    <div className="pt-2">
+                      <p className="text-sm text-muted-foreground mb-2">Operating Today</p>
+                      <div>
+                        {isOperatingToday() ? (
+                          <Badge className="bg-green-500 hover:bg-green-600 text-white px-3 py-1">
+                            Yes
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="px-3 py-1">
+                            No
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Exceptions */}
+                    {data.scheduleExceptions && data.scheduleExceptions.length > 0 && (
+                      <div className="pt-2 border-t">
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-primary hover:underline"
+                          onClick={() => setShowExceptions(true)}
+                        >
+                          View schedule exceptions ({data.scheduleExceptions.length})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -542,6 +596,45 @@ const FindMyBusDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Exceptions Modal */}
+      <Dialog open={showExceptions} onOpenChange={setShowExceptions}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Schedule Exceptions</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-y-auto">
+            {data?.scheduleExceptions && data.scheduleExceptions.length > 0 ? (
+              <div className="space-y-3">
+                {data.scheduleExceptions.map((exception: any, index: number) => (
+                  <div key={exception.id || index} className="p-3 border rounded-lg bg-muted/50">
+                    <div className="flex gap-2 mb-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">
+                          {exception.exceptionDate || exception.date || 'Exception'}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {exception.description || exception.reason || 'No description available'}
+                        </p>
+                        {exception.type && (
+                          <Badge variant="outline" className="mt-2 text-xs">
+                            {exception.type}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No exceptions found</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
