@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { Search, MapPin, ArrowRight, Loader2, ArrowRightLeftIcon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PassengerApIsService } from "@/generated/api-client/route-management";
@@ -169,14 +169,28 @@ const SearchForm = ({
     };
   }, [fromDebounceTimer, toDebounceTimer]);
 
-  // Sync when parent provides new initial values (e.g., when SearchResults reads URL params)
-  useEffect(() => {
-    if (initialFromText !== undefined) setFromText(initialFromText);
-    if (initialToText !== undefined) setToText(initialToText);
-    if (initialFromStopId !== undefined) setFromStopId(initialFromStopId);
-    if (initialToStopId !== undefined) setToStopId(initialToStopId);
-    if (initialDate !== undefined) setTravelDate(initialDate);
-  }, [initialFromText, initialToText, initialFromStopId, initialToStopId, initialDate]);
+  // Swap from and to locations
+  const handleSwapLocations = () => {
+    // Swap text values
+    const tempFromText = fromText;
+    const tempToText = toText;
+    setFromText(tempToText);
+    setToText(tempFromText);
+
+    // Swap stop IDs
+    const tempFromStopId = fromStopId;
+    const tempToStopId = toStopId;
+    setFromStopId(tempToStopId);
+    setToStopId(tempFromStopId);
+
+    // Clear dropdowns
+    setShowFromDropdown(false);
+    setShowToDropdown(false);
+
+    // Clear stops arrays to force re-search if needed
+    setFromStops([]);
+    setToStops([]);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,7 +212,7 @@ const SearchForm = ({
           )}
           <Input
             type="text"
-            placeholder="From (e.g., Colombo Fort)"
+            placeholder="From"
             value={fromText}
             onChange={(e) => handleFromTextChange(e.target.value)}
             onFocus={() => fromText.length >= 2 && fromStops.length > 0 && setShowFromDropdown(true)}
@@ -223,9 +237,15 @@ const SearchForm = ({
           )}
         </div>
 
-        <div className="hidden md:flex items-center justify-center">
-          <ArrowRight className="h-5 w-5 text-muted-foreground" />
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleSwapLocations}
+          className="bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 hover:border-primary/50 transition-all duration-300 rounded-full p-3 h-auto w-auto"
+        >
+          <ArrowRightLeftIcon className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+        </Button>
 
         <div className="flex-1 relative" ref={toDropdownRef}>
           <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 z-10" />
@@ -234,7 +254,7 @@ const SearchForm = ({
           )}
           <Input
             type="text"
-            placeholder="To (e.g., Kandy)"
+            placeholder="To"
             value={toText}
             onChange={(e) => handleToTextChange(e.target.value)}
             onFocus={() => toText.length >= 2 && toStops.length > 0 && setShowToDropdown(true)}
