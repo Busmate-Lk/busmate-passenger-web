@@ -7,7 +7,6 @@ import { PassengerApIsService } from "@/generated/api-client/route-management";
 import type { PassengerStopResponse } from "@/generated/api-client/route-management";
 
 interface SearchFormProps {
-  variant?: "hero" | "page";
   // Optional initial values (used when navigating to the search page via URL or location.state)
   initialFromText?: string;
   initialToText?: string;
@@ -23,7 +22,6 @@ interface StopOption {
 }
 
 const SearchForm = ({
-  variant = "hero",
   initialFromText,
   initialToText,
   initialFromStopId,
@@ -190,11 +188,9 @@ const SearchForm = ({
     }
   };
 
-  const isHero = variant === "hero";
-
   return (
-    <form onSubmit={handleSearch} className={`${isHero ? "space-y-6" : "space-y-4"}`}>
-      <div className={`flex flex-col ${isHero ? "md:flex-row" : "sm:flex-row"} gap-4`}>
+    <form onSubmit={handleSearch} className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative" ref={fromDropdownRef}>
           <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 z-10" />
           {fromLoading && (
@@ -206,7 +202,7 @@ const SearchForm = ({
             value={fromText}
             onChange={(e) => handleFromTextChange(e.target.value)}
             onFocus={() => fromText.length >= 2 && fromStops.length > 0 && setShowFromDropdown(true)}
-            className={`pl-10 ${fromLoading ? 'pr-10' : ''} ${isHero ? "h-14 text-lg rounded-2xl" : "h-12 rounded-xl"} bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
+            className={`pl-10 ${fromLoading ? 'pr-10' : ''} h-14 text-lg rounded-2xl bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
           />
           
           {/* From Stops Dropdown */}
@@ -227,7 +223,7 @@ const SearchForm = ({
           )}
         </div>
 
-        <div className={`${isHero ? "hidden md:flex" : "hidden sm:flex"} items-center justify-center`}>
+        <div className="hidden md:flex items-center justify-center">
           <ArrowRight className="h-5 w-5 text-muted-foreground" />
         </div>
 
@@ -242,7 +238,7 @@ const SearchForm = ({
             value={toText}
             onChange={(e) => handleToTextChange(e.target.value)}
             onFocus={() => toText.length >= 2 && toStops.length > 0 && setShowToDropdown(true)}
-            className={`pl-10 ${toLoading ? 'pr-10' : ''} ${isHero ? "h-14 text-lg rounded-2xl" : "h-12 rounded-xl"} bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
+            className={`pl-10 ${toLoading ? 'pr-10' : ''} h-14 text-lg rounded-2xl bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
           />
           
           {/* To Stops Dropdown */}
@@ -268,40 +264,19 @@ const SearchForm = ({
             type="date"
             value={travelDate}
             onChange={(e) => setTravelDate(e.target.value)}
-            className={`${isHero ? "h-14 text-lg rounded-2xl" : "h-12 rounded-xl"} bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300`}
+            className="h-14 text-lg rounded-2xl bg-white/95 backdrop-blur-sm shadow-elegant border-2 border-white/20 focus:border-primary/50 transition-all duration-300"
           />
         </div>
 
         <Button
           type="submit"
-          size={isHero ? "lg" : "default"}
-          disabled={!fromStopId || !toStopId}
-          className={`${isHero ? "h-14 px-10 text-lg rounded-2xl" : "h-12 px-6 rounded-xl"} bg-gradient-primary hover:shadow-glow hover:scale-105 transition-all duration-300 shadow-elegant font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+          size="lg"
+          className="h-14 px-10 text-lg rounded-2xl bg-gradient-primary hover:shadow-glow hover:scale-105 transition-all duration-300 shadow-elegant font-semibold"
         >
           <Search className="mr-2 h-5 w-5" />
           Find My Bus
         </Button>
       </div>
-
-      {isHero && (
-        <div className="flex flex-wrap gap-3 justify-center items-center">
-          <span className="text-sm text-white/80 font-medium">Popular routes:</span>
-          {["Colombo Fort - Kandy", "Colombo Fort - Galle", "Colombo - Negombo", "Kandy - Nuwara Eliya"].map((route) => (
-            <button
-              key={route}
-              type="button"
-              onClick={() => {
-                const [fromCity, toCity] = route.split(" - ");
-                handleFromTextChange(fromCity);
-                handleToTextChange(toCity);
-              }}
-              className="px-4 py-2 text-sm bg-white/10 backdrop-blur-sm text-white rounded-full border border-white/20 hover:bg-white/20 hover:scale-105 transition-all duration-300 font-medium shadow-elegant"
-            >
-              {route}
-            </button>
-          ))}
-        </div>
-      )}
     </form>
   );
 };

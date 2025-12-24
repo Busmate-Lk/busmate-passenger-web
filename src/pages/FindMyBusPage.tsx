@@ -223,14 +223,13 @@ const FindMyBusPage = () => {
           className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
         />
         {/* Keep the existing gradient/color effect above the image */}
-        <div className="absolute inset-0 bg-gradient-hero opacity-90" />
-        <div className="container mx-auto px-4">
+        <div className="absolute inset-0 bg-gradient-hero opacity-60" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">
               Find Your Perfect Route
             </h1>
             <SearchForm
-              variant="page"
               initialFromText={searchParams.fromText || searchParams.fromName}
               initialToText={searchParams.toText || searchParams.toName}
               initialFromStopId={searchParams.fromStopId}
