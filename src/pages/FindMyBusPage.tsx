@@ -74,6 +74,13 @@ const FindMyBusPage = () => {
     });
   }, [location.search]);
 
+  // Filter function to only include REALTIME and SCHEDULE data
+  const filterResultsByDataMode = (results: BusResult[]): BusResult[] => {
+    return results.filter(bus => 
+      bus.dataMode === 'REALTIME' || bus.dataMode === 'SCHEDULE'
+    );
+  };
+
   // Search buses function
   const searchBuses = async () => {
     if (!searchParams.fromStopId || !searchParams.toStopId) {
@@ -93,11 +100,14 @@ const FindMyBusPage = () => {
         filters.routeNumber || undefined,
         filters.roadType || undefined,
         true, // includeScheduledData
-        true  // includeRouteData
+        false  // includeRouteData - set to false to exclude STATIC route data
       );
 
-      setBusResults(response.results || []);
-      setTotalResults(response.results?.length || 0);
+      // Filter results to only include REALTIME and SCHEDULE data modes
+      const filteredResults = filterResultsByDataMode(response.results || []);
+      
+      setBusResults(filteredResults);
+      setTotalResults(filteredResults.length);
       
       // Store stop names from response
       if (response.fromStop?.name) setFromStopName(response.fromStop.name);
@@ -276,8 +286,8 @@ const FindMyBusPage = () => {
                       <CardContent>
                         <div className="text-muted-foreground">
                           <Bus className="h-8 sm:h-12 w-8 sm:w-12 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-base sm:text-lg font-semibold mb-2">No buses found</h3>
-                          <p className="text-sm sm:text-base">Try adjusting your search criteria or filters.</p>
+                          <h3 className="text-base sm:text-lg font-semibold mb-2">No buses with timing found</h3>
+                          <p className="text-sm sm:text-base">No scheduled or real-time buses available for this route. Try adjusting your search date, time, or filters.</p>
                         </div>
                       </CardContent>
                     </Card>
