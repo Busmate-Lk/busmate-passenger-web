@@ -2,18 +2,14 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { 
   Bus, 
-  MapPin, 
-  ArrowRight, 
-  Clock, 
-  Star,
   Loader2 
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import SearchForm from "@/components/search/SearchForm";
 import FilterSidebar from "@/components/search/FilterSidebar";
+import BusCard from "@/components/search/BusCard";
 import { PassengerQueryService } from "@/generated/api-client/route-management";
 import type { 
   BusResult,
@@ -78,70 +74,6 @@ const FindMyBusPage = () => {
     });
   }, [location.search]);
 
-  // Helper function to format time
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return '';
-    
-    try {
-      // Handle different time formats from API
-      const date = new Date(timeString);
-      if (isNaN(date.getTime())) {
-        // If it's not a valid date, assume it's a LocalTime format like "HH:mm:ss"
-        return timeString.substring(0, 5); // Return HH:mm
-      }
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return timeString;
-    }
-  };
-
-  // Helper function to format duration
-  const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'N/A';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return `${hours}h ${mins}m`;
-    }
-    return `${mins}m`;
-  };
-
-  // Helper function to get data mode badge color
-  const getDataModeBadgeVariant = (dataMode?: string) => {
-    switch (dataMode) {
-      case 'REALTIME':
-        return 'default'; // Primary color
-      case 'SCHEDULE':
-        return 'secondary';
-      case 'STATIC':
-        return 'outline';
-      default:
-        return 'outline';
-    }
-  };
-
-  // Helper function to get departure time based on data mode
-  const getDepartureTime = (bus: BusResult) => {
-    if (bus.dataMode === 'REALTIME' && bus.actualDepartureTime) {
-      return bus.actualDepartureTime;
-    }
-    if (bus.dataMode === 'SCHEDULE' && bus.scheduledDepartureAtOrigin) {
-      return bus.scheduledDepartureAtOrigin;
-    }
-    return null;
-  };
-
-  // Helper function to get arrival time based on data mode
-  const getArrivalTime = (bus: BusResult) => {
-    if (bus.dataMode === 'REALTIME' && bus.actualArrivalTime) {
-      return bus.actualArrivalTime;
-    }
-    if (bus.dataMode === 'SCHEDULE' && bus.scheduledArrivalAtDestination) {
-      return bus.scheduledArrivalAtDestination;
-    }
-    return null;
-  };
-
   // Search buses function
   const searchBuses = async () => {
     if (!searchParams.fromStopId || !searchParams.toStopId) {
@@ -187,6 +119,17 @@ const FindMyBusPage = () => {
     }
   }, [searchParams, filters]);
 
+  // Helper to get departure time for sorting
+  const getDepartureTimeForSort = (bus: BusResult) => {
+    if (bus.dataMode === 'REALTIME' && bus.actualDepartureTime) {
+      return bus.actualDepartureTime;
+    }
+    if (bus.dataMode === 'SCHEDULE' && bus.scheduledDepartureAtOrigin) {
+      return bus.scheduledDepartureAtOrigin;
+    }
+    return null;
+  };
+
   // Sort buses based on sortBy filter
   const sortedBuses = [...busResults].sort((a, b) => {
     switch (filters.sortBy) {
@@ -203,8 +146,8 @@ const FindMyBusPage = () => {
       case 'departure':
       default:
         // Sort by departure time
-        const depA = getDepartureTime(a);
-        const depB = getDepartureTime(b);
+        const depA = getDepartureTimeForSort(a);
+        const depB = getDepartureTimeForSort(b);
         if (!depA || !depB) return 0;
         return depA.localeCompare(depB);
     }
@@ -320,174 +263,13 @@ const FindMyBusPage = () => {
                 <div className="space-y-4">
                   {sortedBuses.length > 0 ? (
                     sortedBuses.map((bus, index) => (
-                      <Card key={bus.tripId || bus.scheduleId || `${bus.routeId}-${index}`} className="hover:shadow-soft transition-all duration-300 border border-border w-full">
-                        <CardContent className="p-4 sm:p-6">
-                          <div className="flex flex-col gap-4">
-                            {/* Bus Info */}
-                            <div className="w-full">
-                              <div className="flex items-start gap-3 mb-3">
-                                <div className="p-2 rounded-lg bg-gradient-primary flex-shrink-0">
-                                  <Bus className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                                    {bus.routeNumber && `Route ${bus.routeNumber}`}
-                                    {bus.routeName && ` - ${bus.routeName}`}
-                                  </h3>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
-                                    <Badge variant={getDataModeBadgeVariant(bus.dataMode)} className="text-xs">
-                                      {bus.dataMode || 'STATIC'}
-                                    </Badge>
-                                    {bus.operatorName && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        {bus.operatorName}
-                                      </Badge>
-                                    )}
-                                    {bus.roadType && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {bus.roadType}
-                                      </Badge>
-                                    )}
-                                    {bus.tripStatus && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {bus.tripStatus}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {bus.routeThrough && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      Via: {bus.routeThrough}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-4 text-sm text-muted-foreground mb-3">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{fromStopName || 'Origin'}</span>
-                                </div>
-                                <ArrowRight className="h-4 w-4 hidden sm:block flex-shrink-0" />
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{toStopName || 'Destination'}</span>
-                                </div>
-                                {bus.distanceKm && (
-                                  <Badge variant="outline" className="text-xs">
-                                    {bus.distanceKm.toFixed(1)} km
-                                  </Badge>
-                                )}
-                              </div>
-
-                              {/* Bus Details */}
-                              {(bus.busPlateNumber || bus.busModel || bus.busCapacity) && (
-                                <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
-                                  {bus.busPlateNumber && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {bus.busPlateNumber}
-                                    </Badge>
-                                  )}
-                                  {bus.busModel && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {bus.busModel}
-                                    </Badge>
-                                  )}
-                                  {bus.busCapacity && (
-                                    <Badge variant="outline" className="text-xs">
-                                      Capacity: {bus.busCapacity}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Status Message */}
-                              {bus.statusMessage && (
-                                <p className="text-sm text-muted-foreground italic">
-                                  {bus.statusMessage}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Time Info */}
-                            <div className="w-full">
-                              <div className="flex flex-col sm:flex-row gap-4">
-                                {/* Time Details */}
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between sm:justify-start sm:gap-4 text-sm">
-                                    {getDepartureTime(bus) ? (
-                                      <>
-                                        <div className="text-center">
-                                          <div className="text-base sm:text-lg font-semibold text-foreground">
-                                            {formatTime(getDepartureTime(bus)!)}
-                                          </div>
-                                          <div className="text-xs text-muted-foreground">
-                                            {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'} Departure
-                                          </div>
-                                        </div>
-                                        {bus.estimatedDurationMinutes && (
-                                          <div className="flex items-center gap-1 text-muted-foreground">
-                                            <Clock className="h-4 w-4" />
-                                            <span className="text-xs sm:text-sm">
-                                              {formatDuration(bus.estimatedDurationMinutes)}
-                                            </span>
-                                          </div>
-                                        )}
-                                        {getArrivalTime(bus) && (
-                                          <div className="text-center">
-                                            <div className="text-base sm:text-lg font-semibold text-foreground">
-                                              {formatTime(getArrivalTime(bus)!)}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                              {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'} Arrival
-                                            </div>
-                                          </div>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <div className="text-sm text-muted-foreground">
-                                        <p>Time information not available</p>
-                                        {bus.estimatedDurationMinutes && (
-                                          <div className="flex items-center gap-1 mt-1">
-                                            <Clock className="h-4 w-4" />
-                                            <span>Estimated duration: {formatDuration(bus.estimatedDurationMinutes)}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                {/* Action Buttons */}
-                                <div className="flex items-center justify-end gap-3 sm:flex-shrink-0">
-                                  {bus.dataMode === 'REALTIME' && bus.tripId ? (
-                                    <Button 
-                                      className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/findmybus/detail?type=trip&id=${bus.tripId}`}
-                                    >
-                                      View Trip
-                                    </Button>
-                                  ) : bus.dataMode === 'SCHEDULE' && bus.scheduleId ? (
-                                    <Button 
-                                      className="bg-gradient-primary hover:opacity-90 px-4 py-2 text-sm"
-                                      onClick={() => window.location.href = `/findmybus/detail?type=schedule&id=${bus.scheduleId}&date=${searchParams.date || new Date().toISOString().split('T')[0]}`}
-                                    >
-                                      View Schedule
-                                    </Button>
-                                  ) : (
-                                    <Button 
-                                      variant="outline" 
-                                      className="px-3 py-2 text-sm"
-                                      onClick={() => window.location.href = `/route/${bus.routeId}`}
-                                    >
-                                      View Route
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <BusCard
+                        key={bus.tripId || bus.scheduleId || `${bus.routeId}-${index}`}
+                        bus={bus}
+                        fromStopName={fromStopName}
+                        toStopName={toStopName}
+                        searchDate={searchParams.date}
+                      />
                     ))
                   ) : !loading && (searchParams.fromStopId && searchParams.toStopId) ? (
                     <Card className="p-6 sm:p-8 text-center w-full">
