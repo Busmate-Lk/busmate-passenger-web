@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, ArrowRight, Loader2, ArrowRightLeftIcon, Calendar, Calendar1, CalendarDays } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { PassengerApIsService } from "@/generated/api-client/route-management";
 import type { PassengerStopResponse } from "@/generated/api-client/route-management";
 
@@ -29,11 +29,31 @@ const SearchForm = ({
   initialDate,
 }: SearchFormProps) => {
   const today = new Date().toISOString().split('T')[0];
-  const [fromText, setFromText] = useState(initialFromText || "");
-  const [toText, setToText] = useState(initialToText || "");
-  const [fromStopId, setFromStopId] = useState(initialFromStopId || "");
-  const [toStopId, setToStopId] = useState(initialToStopId || "");
-  const [travelDate, setTravelDate] = useState(initialDate || today);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize state from URL params first, then fall back to initial props
+  const getInitialValue = (urlKey: string, propValue?: string, defaultValue = "") => {
+    return searchParams.get(urlKey) || propValue || defaultValue;
+  };
+
+  const [fromText, setFromText] = useState(() => 
+    getInitialValue("fromName", initialFromText) || getInitialValue("fromText", initialFromText)
+  );
+  const [toText, setToText] = useState(() => 
+    getInitialValue("toName", initialToText) || getInitialValue("toText", initialToText)
+  );
+  const [fromStopId, setFromStopId] = useState(() => 
+    getInitialValue("fromStopId", initialFromStopId)
+  );
+  const [toStopId, setToStopId] = useState(() => 
+    getInitialValue("toStopId", initialToStopId)
+  );
+  const [travelDate, setTravelDate] = useState(() => 
+    getInitialValue("date", initialDate, today)
+  );
+  
   const [fromStops, setFromStops] = useState<StopOption[]>([]);
   const [toStops, setToStops] = useState<StopOption[]>([]);
   const [fromLoading, setFromLoading] = useState(false);
@@ -45,7 +65,67 @@ const SearchForm = ({
   
   const fromDropdownRef = useRef<HTMLDivElement>(null);
   const toDropdownRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+
+  // Sync state with URL parameters when they change
+  useEffect(() => {
+    const urlFromStopId = searchParams.get("fromStopId");
+    const urlToStopId = searchParams.get("toStopId");
+    const urlFromName = searchParams.get("fromName");
+    const urlToName = searchParams.get("toName");
+    const urlFromText = searchParams.get("fromText");
+    const urlToText = searchParams.get("toText");
+    const urlDate = searchParams.get("date");
+
+    // Update state if URL params differ from current state
+    if (urlFromStopId && urlFromStopId !== fromStopId) {
+      setFromStopId(urlFromStopId);
+    }
+    if (urlToStopId && urlToStopId !== toStopId) {
+      setToStopId(urlToStopId);
+    }
+    if ((urlFromName || urlFromText) && (urlFromName !== fromText && urlFromText !== fromText)) {
+      setFromText(urlFromName || urlFromText || "");
+    }
+    if ((urlToName || urlToText) && (urlToName !== toText && urlToText !== toText)) {
+      setToText(urlToName || urlToText || "");
+    }
+    if (urlDate && urlDate !== travelDate) {
+      setTravelDate(urlDate);
+    }
+  }, [searchParams]);
+
+  // Update URL when form state changes (if on FindMyBusPage)
+  useEffect(() => {
+    // Only sync to URL if we're on the /findmybus page
+    if (location.pathname === '/findmybus' && (fromStopId || toStopId || fromText || toText)) {
+      const newParams = new URLSearchParams();
+      
+      if (fromStopId) newParams.set("fromStopId", fromStopId);
+      if (toStopId) newParams.set("toStopId", toStopId);
+      if (fromText) {
+        if (fromStopId) {
+          newParams.set("fromName", fromText);
+        } else {
+          newParams.set("fromText", fromText);
+        }
+      }
+      if (toText) {
+        if (toStopId) {
+          newParams.set("toName", toText);
+        } else {
+          newParams.set("toText", toText);
+        }
+      }
+      if (travelDate) newParams.set("date", travelDate);
+
+      // Only update if params actually changed
+      const currentParams = searchParams.toString();
+      const newParamsString = newParams.toString();
+      if (currentParams !== newParamsString && newParamsString) {
+        setSearchParams(newParams, { replace: true });
+      }
+    }
+  }, [fromStopId, toStopId, fromText, toText, travelDate, location.pathname]);
 
   // Search stops function
   const searchStops = async (query: string, type: 'from' | 'to') => {
