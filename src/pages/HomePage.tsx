@@ -35,7 +35,7 @@ const HomePage = () => {
             </p>
             
             {/* Hero Search */}
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <SearchForm />
             </div>
           </div>
