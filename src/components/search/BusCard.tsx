@@ -21,10 +21,18 @@ const formatTime = (timeString?: string) => {
     // Handle different time formats from API
     const date = new Date(timeString);
     if (isNaN(date.getTime())) {
-      // If it's not a valid date, assume it's a LocalTime format like "HH:mm:ss"
-      return timeString.substring(0, 5); // Return HH:mm
+      // If it's not a valid date, assume it's a LocalTime format like "HH:mm:ss" or "HH:mm"
+      const timeParts = timeString.split(':');
+      if (timeParts.length >= 2) {
+        const hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+      }
+      return timeString;
     }
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
   } catch {
     return timeString;
   }
