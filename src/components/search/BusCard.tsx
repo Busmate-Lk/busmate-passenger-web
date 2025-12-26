@@ -41,62 +41,32 @@ const formatDuration = (minutes?: number) => {
   return `${mins}m`;
 };
 
-// Helper function to get data mode badge color
-const getDataModeBadgeVariant = (dataMode?: string): "default" | "secondary" | "outline" | "destructive" => {
-  switch (dataMode) {
-    case 'REALTIME':
-      return 'default'; // Primary color
-    case 'SCHEDULE':
-      return 'secondary';
-    case 'STATIC':
-      return 'outline';
-    default:
-      return 'outline';
-  }
-};
 
-// Helper function to get departure time based on data mode
+
+// Helper function to get departure time
 const getDepartureTime = (bus: BusResult) => {
-  if (bus.dataMode === 'REALTIME' && bus.actualDepartureTime) {
-    return bus.actualDepartureTime;
-  }
-  if (bus.dataMode === 'SCHEDULE' && bus.scheduledDepartureAtOrigin) {
-    return bus.scheduledDepartureAtOrigin;
-  }
-  return null;
+  return bus.actualDepartureTime || bus.scheduledDepartureAtOrigin || null;
 };
 
-// Helper function to get arrival time based on data mode
+// Helper function to get arrival time
 const getArrivalTime = (bus: BusResult) => {
-  if (bus.dataMode === 'REALTIME' && bus.actualArrivalTime) {
-    return bus.actualArrivalTime;
-  }
-  if (bus.dataMode === 'SCHEDULE' && bus.scheduledArrivalAtDestination) {
-    return bus.scheduledArrivalAtDestination;
-  }
-  return null;
+  return bus.actualArrivalTime || bus.scheduledArrivalAtDestination || null;
 };
 
 export default function BusCard({ bus, fromStopName, toStopName, searchDate, onViewDetails }: BusCardProps) {
   const departureTime = getDepartureTime(bus);
   const arrivalTime = getArrivalTime(bus);
 
-  // Determine button action based on data mode
+  // Determine button action - prioritize trip, then schedule, then route
   const getDetailLink = () => {
-    if (bus.dataMode === 'REALTIME' && bus.tripId) {
+    if (bus.tripId) {
       return `/findmybus/detail?type=trip&id=${bus.tripId}`;
-    } else if (bus.dataMode === 'SCHEDULE' && bus.scheduleId) {
+    } else if (bus.scheduleId) {
       return `/findmybus/detail?type=schedule&id=${bus.scheduleId}&date=${searchDate || new Date().toISOString().split('T')[0]}`;
     } else if (bus.routeId) {
       return `/route/${bus.routeId}`;
     }
     return null;
-  };
-
-  const getButtonText = () => {
-    if (bus.dataMode === 'REALTIME') return 'View Trip';
-    if (bus.dataMode === 'SCHEDULE') return 'View Schedule';
-    return 'View Route';
   };
 
   return (
@@ -139,11 +109,6 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
               )}
               
               <div className="flex gap-2 flex-wrap">
-                {/* Data mode badge */}
-                <Badge variant={getDataModeBadgeVariant(bus.dataMode)} className="text-xs">
-                  {bus.dataMode || 'STATIC'}
-                </Badge>
-                
                 {/* Distance badge */}
                 {bus.distanceKm && (
                   <Badge variant="outline" className="text-xs">
@@ -195,12 +160,34 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
               </div>
             )}
 
-            {/* Status Message */}
-            {bus.statusMessage && (
-              <p className="text-sm text-muted-foreground italic mt-2">
-                {bus.statusMessage}
-              </p>
-            )}
+            {/* Custom message for missing bus or operator details */}
+            {(() => {
+              const hasBusDetails = bus.busPlateNumber || bus.busModel || bus.busCapacity;
+              const hasOperatorDetails = bus.operatorName;
+              
+              if (!hasBusDetails && !hasOperatorDetails) {
+                return (
+                  <p className="text-sm text-amber-600 italic mt-2">
+                    Bus and operator information not available for this route
+                  </p>
+                );
+              }
+              if (!hasBusDetails) {
+                return (
+                  <p className="text-sm text-amber-600 italic mt-2">
+                    Bus information not available
+                  </p>
+                );
+              }
+              if (!hasOperatorDetails) {
+                return (
+                  <p className="text-sm text-amber-600 italic mt-2">
+                    Operator information not available
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
 
@@ -217,9 +204,6 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
             {departureTime && (
               <div className="pl-5">
                 <span className="font-bold">{formatTime(departureTime)}</span>
-                <div className="text-xs text-muted-foreground">
-                  {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'}
-                </div>
               </div>
             )}
           </div>
@@ -233,9 +217,6 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
             {arrivalTime && (
               <div className="pl-5">
                 <span className="font-bold">{formatTime(arrivalTime)}</span>
-                <div className="text-xs text-muted-foreground">
-                  {bus.dataMode === 'REALTIME' ? 'Actual' : 'Scheduled'}
-                </div>
               </div>
             )}
           </div>
@@ -275,7 +256,7 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
                   }
                 }}
               >
-                {getButtonText()}
+                View Details
               </Button>
             ) : (
               <Button
