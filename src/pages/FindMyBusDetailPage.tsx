@@ -19,7 +19,8 @@ import {
   Battery,
   Users,
   ChevronDown,
-  AlertTriangle
+  AlertTriangle,
+  ChevronLeft
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -336,9 +337,9 @@ const FindMyBusDetailPage = () => {
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="-ml-2"
+            className="-ml-2 bg-gray-200/90 hover:bg-gray-200/100 rounded-full hover:shadow transition-all"
           >
-            <ArrowLeft className="h-8 w-8" />
+            <ArrowLeft className="h-8 w-8 text-foreground" />
           </Button>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             {data.origin || 'Origin'} to {data.destination || 'Destination'}
