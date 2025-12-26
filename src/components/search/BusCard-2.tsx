@@ -151,30 +151,30 @@ export default function BusCard2() {
               {/* Start Dot */}
               <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
               {/* Vertical Line */}
-              <div className="w-1 h-16 bg-primary/50 flex-shrink-0"></div>
+              <div className="w-1 h-8 bg-primary/50 flex-shrink-0"></div>
               {/* End Dot */}
               <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
             </div>
 
             {/* Stops Information */}
-            <div className="flex flex-col justify-between flex-1">
+            <div className="flex flex-col justify-between flex-1 gap-2">
               {/* FROM Stop */}
-              <div className="flex flex-col items-start">
-                <p className="text-sm font-bold text-foreground mb-0.5">
+              <div className="flex flex items-center gap-2">
+                <p className="text-sm font-bold text-foreground">
                   {fromStopName}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatTime(departureTime)}
+                  ({formatTime(departureTime)})
                 </p>
               </div>
 
               {/* TO Stop */}
-              <div className="flex flex-col items-start">
-                <p className="text-sm font-bold text-foreground mb-0.5">
+              <div className="flex flex items-center gap-2">
+                <p className="text-sm font-bold text-foreground">
                   {toStopName}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatTime(arrivalTime)}
+                  ({formatTime(arrivalTime)})
                 </p>
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function BusCard2() {
 
           {/* Info Row - Duration and Distance */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <div className="flex flex sm:flex-row pl-2 sm:pl-0 py-0.5 sm:py-0 sm:items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-foreground">
                 <Clock className="h-4 sm:h-5 w-4 sm:w-5 text-muted-foreground flex-shrink-0" />
                 <span className="hidden sm:inline">Duration:</span>
