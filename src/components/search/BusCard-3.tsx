@@ -58,7 +58,9 @@ export default function BusCard2() {
             <BusFront className="h-10 w-10 text-primary flex-shrink-0 mt-1" />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="font-bold text-xl text-foreground">{bus.routeNumber} |</span>
+                <Badge variant="secondary" className="text-sm font-semibold px-3 py-1">
+                  {bus.routeNumber}
+                </Badge>
                 <h3 className="text-xl font-bold text-foreground">
                   {bus.routeName}
                 </h3>
@@ -70,15 +72,19 @@ export default function BusCard2() {
           </div>
 
           {/* Right side - Time and Distance info */}
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <span>{formatTime(routeOriginDepartureTime)}</span>
               <ArrowRight className="h-5 w-5 text-muted-foreground" />
               <span>{formatTime(routeDestinationArrivalTime)}</span>
             </div>
             <div className="flex gap-2 flex-wrap justify-end">
-                <span className="text-sm font-medium">{bus.distanceKm} km |</span>
-                <span className="text-sm font-medium">{bus.roadType}</span>
+              <Badge variant="outline" className="text-xs">
+                {bus.distanceKm} km
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {bus.roadType}
+              </Badge>
             </div>
           </div>
         </div>
@@ -91,60 +97,64 @@ export default function BusCard2() {
           <Badge variant="secondary" className="text-xs font-medium">
             {bus.operatorName}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="outline" className="text-xs">
             {bus.busPlateNumber}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="outline" className="text-xs">
             {bus.busModel}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="outline" className="text-xs">
             Capacity: {bus.busCapacity}
           </Badge>
         </div>
 
-        <hr className="border-border" />
+        <hr className="border-border mx-[-24px]" />
 
         {/* JOURNEY SECTION - Journey visualization */}
         <div className="space-y-4">
-          {/* Journey Timeline */}
-          <div className="flex items-center justify-between px-4">
+
+          <div className="flex items-center justify-between px-4 mb-[-24px]">
             {/* FROM Stop */}
-            <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
               <p className="text-lg font-bold text-foreground mb-1">
                 {fromStopName}
               </p>
               <p className="text-sm text-muted-foreground">
-                {formatTime(departureTime)}
+                ({formatTime(departureTime)})
               </p>
             </div>
 
-            {/* Journey Visual */}
-            <div className="flex-1 mx-6 flex items-center justify-center relative">
-              {/* Horizontal Line */}
-              <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-primary to-primary/50"></div>
-              {/* Bus Icon Circle */}
-              <div className="relative z-10 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                  <BusFront className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </div>
 
             {/* TO Stop */}
-            <div className="flex flex-col items-end">
+            <div className="flex items-center gap-2">
               <p className="text-lg font-bold text-foreground mb-1">
                 {toStopName}
               </p>
               <p className="text-sm text-muted-foreground">
-                {formatTime(arrivalTime)}
+                ({formatTime(arrivalTime)})
               </p>
             </div>
           </div>
 
-          {/* Info Row - Duration and Distance */}
-          <div className="flex items-center justify-between px-4">
-            <div className="flex gap-4">
-              <div className="flex items-center gap-1 text-md font-bold text-foreground">
+          {/* Journey Timeline */}
+
+          {/* Journey Visual */}
+          <div className="flex-1 mx-4 flex items-center justify-center relative">
+            {/* Horizontal Line */}
+            <div className="absolute inset-x-0 h-2 bg-gradient-to-r from-primary to-primary/70 rounded-full"></div>
+            {/* Bus Icon Circle */}
+            <div className="relative z-10 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                <BusFront className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Row - Duration and Distance */}
+        <div className="flex items-center justify-between px-4">
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1 text-md font-bold text-foreground">
               <Clock className="h-5 w-5 text-muted-foreground" />
               <span>Duration: {formatDuration(bus.estimatedDurationMinutes)}</span>
             </div>
@@ -153,15 +163,14 @@ export default function BusCard2() {
               <Route className="h-5 w-5 text-muted-foreground" />
               <span>Distance: {bus.distanceKm} km</span>
             </div>
-            </div>
-            {/* Button */}
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white rounded-full transition-all duration-300"
-              onClick={() => (window.location.href = detailLink)}
-            >
-              View Details
-            </Button>
           </div>
+          {/* Button */}
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white rounded-full transition-all duration-300"
+            onClick={() => (window.location.href = detailLink)}
+          >
+            View Details
+          </Button>
         </div>
       </CardContent>
     </Card>
