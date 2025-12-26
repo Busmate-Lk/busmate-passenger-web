@@ -91,7 +91,7 @@ export default function BusCard({ bus, fromStopName, toStopName, searchDate, onV
 
                 {/* Show departure and arrival time for route */}
                 {departureTime && arrivalTime && (
-                  <div className="flex items-center gap-1 text-md text-muted-foreground">
+                  <div className="flex items-center gap-1 text-lg text-muted-foreground">
                     <span>{formatTime(departureTime)}</span>
                     <ArrowRight className="h-4 w-4" />
                     <span>{formatTime(arrivalTime)}</span>
