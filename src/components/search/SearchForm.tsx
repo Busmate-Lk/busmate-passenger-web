@@ -205,7 +205,7 @@ const SearchForm = ({
   return (
     <form onSubmit={handleSearch} className="space-y-4">
       {/* Mobile Layout - Card Style */}
-      <div className="md:hidden bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant border-2 border-white/20 overflow-visible">
+      <div className="md:hidden bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant border-2 border-white/20 overflow-hidden">
         {/* From Field */}
         <div className="relative border-b-2 border-gray-300/50" ref={fromDropdownRef}>
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
