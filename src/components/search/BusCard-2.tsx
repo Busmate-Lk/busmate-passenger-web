@@ -49,77 +49,80 @@ export default function BusCard2() {
   const detailLink = "/findmybus/detail?type=trip&id=99999";
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 border border-border rounded-2xl w-full bg-card overflow-hidden">
-      <CardContent className="p-6 space-y-5">
+    <Card className="hover:shadow-lg transition-all duration-300 border border-border rounded-xl sm:rounded-2xl w-full bg-card overflow-hidden">
+      <CardContent className="p-3 sm:p-6 space-y-4 sm:space-y-5">
         {/* TOP SECTION - Route Header with Info */}
-        <div className="flex items-start gap-4 justify-between flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 sm:justify-between">
           {/* Left side - Route Number and Name */}
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <BusFront className="h-10 w-10 text-primary flex-shrink-0 mt-1" />
+          <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+            <BusFront className="h-8 sm:h-10 w-8 sm:w-10 text-primary flex-shrink-0 mt-1" />
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="font-bold text-xl text-foreground">{bus.routeNumber} |</span>
-                <h3 className="text-xl font-bold text-foreground">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap mb-1">
+                <span className="font-bold text-lg sm:text-xl text-foreground">{bus.routeNumber}</span>
+                <span className="hidden sm:inline text-lg text-foreground">|</span>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground">
                   {bus.routeName}
                 </h3>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 via {bus.routeThrough}
               </p>
             </div>
           </div>
 
           {/* Right side - Time and Distance info */}
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
+          <div className="flex flex-col items-start sm:items-end gap-1 text-sm sm:text-base">
+            <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-lg font-semibold text-foreground whitespace-nowrap">
               <span>{formatTime(routeOriginDepartureTime)}</span>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              <ArrowRight className="h-4 sm:h-5 w-4 sm:w-5 text-muted-foreground flex-shrink-0" />
               <span>{formatTime(routeDestinationArrivalTime)}</span>
             </div>
-            <div className="flex gap-2 flex-wrap justify-end">
-                <span className="text-sm font-medium">{bus.distanceKm} km |</span>
-                <span className="text-sm font-medium">{bus.roadType}</span>
+            <div className="flex gap-1 sm:gap-2 text-xs sm:text-sm font-medium">
+                <span>{bus.distanceKm} km</span>
+                <span className="hidden sm:inline">|</span>
+                <span className="hidden sm:inline">{bus.roadType}</span>
+                <span className="sm:hidden text-muted-foreground">({bus.roadType})</span>
             </div>
           </div>
         </div>
 
         {/* BADGES ROW - Operator and Bus Info */}
-        <div className="flex gap-2 flex-wrap">
-          <Badge variant="secondary" className="text-xs font-medium">
+        <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1">
             {bus.operatorType}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 hidden sm:inline-flex">
             {bus.operatorName}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1">
             {bus.busPlateNumber}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 hidden md:inline-flex">
             {bus.busModel}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium">
-            Capacity: {bus.busCapacity}
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 hidden lg:inline-flex">
+            Cap: {bus.busCapacity}
           </Badge>
         </div>
 
         <hr className="border-border" />
 
         {/* JOURNEY SECTION - Journey visualization */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Journey Timeline */}
-          <div className="flex items-center justify-between px-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:px-4">
             {/* FROM Stop */}
-            <div className="flex flex-col items-start">
-              <p className="text-lg font-bold text-foreground mb-1">
+            <div className="flex flex-col items-start flex-shrink-0">
+              <p className="text-base sm:text-lg font-bold text-foreground mb-0.5">
                 {fromStopName}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {formatTime(departureTime)}
               </p>
             </div>
 
             {/* Journey Visual */}
-            <div className="flex-1 mx-6 flex items-center justify-center relative">
+            <div className="hidden sm:flex flex-1 mx-4 sm:mx-6 items-center justify-center relative">
               {/* Horizontal Line */}
               <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-primary to-primary/50"></div>
               {/* Bus Icon Circle */}
@@ -130,33 +133,43 @@ export default function BusCard2() {
               </div>
             </div>
 
+            {/* Mobile Journey Visual - Compact */}
+            <div className="sm:hidden flex items-center gap-2 px-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <BusFront className="h-4 w-4 text-white" />
+              </div>
+              <div className="text-xs text-muted-foreground">→</div>
+            </div>
+
             {/* TO Stop */}
-            <div className="flex flex-col items-end">
-              <p className="text-lg font-bold text-foreground mb-1">
+            <div className="flex flex-col items-start sm:items-end flex-shrink-0">
+              <p className="text-base sm:text-lg font-bold text-foreground mb-0.5">
                 {toStopName}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {formatTime(arrivalTime)}
               </p>
             </div>
           </div>
 
           {/* Info Row - Duration and Distance */}
-          <div className="flex items-center justify-between px-4">
-            <div className="flex gap-4">
-              <div className="flex items-center gap-1 text-md font-bold text-foreground">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <span>Duration: {formatDuration(bus.estimatedDurationMinutes)}</span>
-            </div>
-            <span className="border border-2 border-l border-gray-600 my-1 py-2"></span>
-            <div className="flex items-center gap-1 text-md font-bold text-foreground">
-              <Route className="h-5 w-5 text-muted-foreground" />
-              <span>Distance: {bus.distanceKm} km</span>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 sm:px-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-foreground">
+                <Clock className="h-4 sm:h-5 w-4 sm:w-5 text-muted-foreground flex-shrink-0" />
+                <span className="hidden sm:inline">Duration:</span>
+                <span>{formatDuration(bus.estimatedDurationMinutes)}</span>
+              </div>
+              <span className="hidden sm:block border-l-2 border-gray-300 h-5"></span>
+              <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-foreground">
+                <Route className="h-4 sm:h-5 w-4 sm:w-5 text-muted-foreground flex-shrink-0" />
+                <span className="hidden sm:inline">Distance:</span>
+                <span>{bus.distanceKm} km</span>
+              </div>
             </div>
             {/* Button */}
             <Button
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white rounded-full transition-all duration-300"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white rounded-full transition-all duration-300"
               onClick={() => (window.location.href = detailLink)}
             >
               View Details
