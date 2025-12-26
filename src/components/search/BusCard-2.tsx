@@ -109,8 +109,8 @@ export default function BusCard2() {
 
         {/* JOURNEY SECTION - Journey visualization */}
         <div className="space-y-3 sm:space-y-4">
-          {/* Journey Timeline */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:px-4">
+          {/* Desktop Journey Timeline */}
+          <div className="hidden sm:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:px-4">
             {/* FROM Stop */}
             <div className="flex flex-col items-start flex-shrink-0">
               <p className="text-base sm:text-lg font-bold text-foreground mb-0.5">
@@ -122,7 +122,7 @@ export default function BusCard2() {
             </div>
 
             {/* Journey Visual */}
-            <div className="hidden sm:flex flex-1 mx-4 sm:mx-6 items-center justify-center relative">
+            <div className="flex flex-1 mx-4 sm:mx-6 items-center justify-center relative">
               {/* Horizontal Line */}
               <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-primary to-primary/50"></div>
               {/* Bus Icon Circle */}
@@ -133,14 +133,6 @@ export default function BusCard2() {
               </div>
             </div>
 
-            {/* Mobile Journey Visual - Compact */}
-            <div className="sm:hidden flex items-center gap-2 px-2">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <BusFront className="h-4 w-4 text-white" />
-              </div>
-              <div className="text-xs text-muted-foreground">→</div>
-            </div>
-
             {/* TO Stop */}
             <div className="flex flex-col items-start sm:items-end flex-shrink-0">
               <p className="text-base sm:text-lg font-bold text-foreground mb-0.5">
@@ -149,6 +141,42 @@ export default function BusCard2() {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {formatTime(arrivalTime)}
               </p>
+            </div>
+          </div>
+
+          {/* Mobile Journey Timeline - Vertical */}
+          <div className="sm:hidden flex gap-4 px-2">
+            {/* Vertical Path with Dots */}
+            <div className="flex flex-col items-center gap-0">
+              {/* Start Dot */}
+              <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
+              {/* Vertical Line */}
+              <div className="w-1 h-16 bg-primary/50 flex-shrink-0"></div>
+              {/* End Dot */}
+              <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0"></div>
+            </div>
+
+            {/* Stops Information */}
+            <div className="flex flex-col justify-between flex-1">
+              {/* FROM Stop */}
+              <div className="flex flex-col items-start">
+                <p className="text-sm font-bold text-foreground mb-0.5">
+                  {fromStopName}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatTime(departureTime)}
+                </p>
+              </div>
+
+              {/* TO Stop */}
+              <div className="flex flex-col items-start">
+                <p className="text-sm font-bold text-foreground mb-0.5">
+                  {toStopName}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatTime(arrivalTime)}
+                </p>
+              </div>
             </div>
           </div>
 
