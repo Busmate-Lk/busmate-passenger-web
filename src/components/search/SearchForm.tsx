@@ -205,12 +205,16 @@ const SearchForm = ({
   return (
     <form onSubmit={handleSearch} className="space-y-4">
       {/* Mobile Layout - Card Style */}
-      <div className="md:hidden bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant border-2 border-white/20 overflow-hidden">
+      <div className="md:hidden bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant border-2 border-white/20 overflow-visible">
         {/* From Field */}
         <div className="relative border-b-2 border-gray-300/50" ref={fromDropdownRef}>
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 z-10" />
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
+            <MapPin className="text-muted-foreground h-5 w-5" />
+          </div>
           {fromLoading && (
-            <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 animate-spin z-10" />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
+              <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+            </div>
           )}
           <Input
             type="text"
@@ -218,18 +222,31 @@ const SearchForm = ({
             value={fromText}
             onChange={(e) => handleFromTextChange(e.target.value)}
             onFocus={() => fromText.length >= 2 && fromStops.length > 0 && setShowFromDropdown(true)}
-            className={`pl-12 ${fromLoading ? 'pr-12' : 'pr-4'} h-16 text-base border-0 bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0`}
+            onClick={(e) => {
+              e.currentTarget.focus();
+              if (fromText.length >= 2 && fromStops.length > 0) {
+                setShowFromDropdown(true);
+              }
+            }}
+            className={`pl-12 ${fromLoading ? 'pr-12' : 'pr-4'} h-16 text-base border-0 bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 cursor-text`}
           />
           
           {/* From Stops Dropdown */}
           {showFromDropdown && fromStops.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] max-h-60 overflow-y-auto">
               {fromStops.map((stop) => (
                 <button
                   key={stop.id}
                   type="button"
-                  onClick={() => selectFromStop(stop)}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    selectFromStop(stop);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    selectFromStop(stop);
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 active:bg-gray-100 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
                 >
                   <div className="font-medium text-gray-900">{stop.name}</div>
                   {stop.city && <div className="text-sm text-gray-500">{stop.city}</div>}
@@ -254,9 +271,13 @@ const SearchForm = ({
 
         {/* To Field */}
         <div className="relative border-b-2 border-gray-300/50" ref={toDropdownRef}>
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 z-10" />
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
+            <MapPin className="text-muted-foreground h-5 w-5" />
+          </div>
           {toLoading && (
-            <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 animate-spin z-10" />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
+              <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+            </div>
           )}
           <Input
             type="text"
@@ -264,18 +285,31 @@ const SearchForm = ({
             value={toText}
             onChange={(e) => handleToTextChange(e.target.value)}
             onFocus={() => toText.length >= 2 && toStops.length > 0 && setShowToDropdown(true)}
-            className={`pl-12 ${toLoading ? 'pr-12' : 'pr-4'} h-16 text-base border-0 bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0`}
+            onClick={(e) => {
+              e.currentTarget.focus();
+              if (toText.length >= 2 && toStops.length > 0) {
+                setShowToDropdown(true);
+              }
+            }}
+            className={`pl-12 ${toLoading ? 'pr-12' : 'pr-4'} h-16 text-base border-0 bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 cursor-text`}
           />
           
           {/* To Stops Dropdown */}
           {showToDropdown && toStops.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] max-h-60 overflow-y-auto">
               {toStops.map((stop) => (
                 <button
                   key={stop.id}
                   type="button"
-                  onClick={() => selectToStop(stop)}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    selectToStop(stop);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    selectToStop(stop);
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 active:bg-gray-100 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
                 >
                   <div className="font-medium text-gray-900">{stop.name}</div>
                   {stop.city && <div className="text-sm text-gray-500">{stop.city}</div>}
