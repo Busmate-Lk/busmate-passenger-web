@@ -331,62 +331,63 @@ const FindMyBusDetailPage = () => {
         <div className="absolute inset-0 bg-gradient-hero opacity-90" />
       </div>
       
-      <div className="container mx-auto px-4 py-8 max-w-[1200px]">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-[1200px]">
         {/* Page Header */}
-        <div className="mb-8 flex gap-4">
+        <div className="mb-4 sm:mb-6 md:mb-8 flex gap-2 sm:gap-3 md:gap-4 items-center">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="-ml-2 bg-gray-200/90 hover:bg-gray-200/100 rounded-full hover:shadow transition-all"
+            className="-ml-1 sm:-ml-2 bg-gray-200/90 hover:bg-gray-200/100 rounded-full hover:shadow transition-all p-1.5 sm:p-2 h-auto"
           >
-            <ArrowLeft className="h-8 w-8 text-foreground" />
+            <ArrowLeft className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-foreground" />
           </Button>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
             {data.origin || 'Origin'} to {data.destination || 'Destination'}
           </h1>
         </div>
 
         {/* Bus Summary Card */}
-        <Card className="mb-6 bg-muted/30">
-          <CardContent className="p-4 md:p-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <Card className="mb-4 sm:mb-5 md:mb-6 bg-muted/30">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               {data.routeNumber && (
               <div>
-                <p className="text-md text-muted-foreground mb-1">Route No</p>
-                <p className="text-2xl font-semibold">{data.routeNumber || 'N/A'}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Route No</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold">{data.routeNumber || 'N/A'}</p>
               </div>
                 )}
-              <div className="col-span-2">
-                <p className="text-md text-muted-foreground mb-1">Route</p>
-                <p className="text-2xl font-semibold truncate">{data.routeName || 'N/A'}</p>
+              <div className={data.routeNumber ? "col-span-2 sm:col-span-1 lg:col-span-1" : "col-span-2"}>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Route</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold truncate">{data.routeName || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-md text-muted-foreground mb-1">Departure</p>
-                <p className="text-2xl font-semibold">{formatTime(data.departureTime) || 'N/A'}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Departure</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold">{formatTime(data.departureTime) || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-md text-muted-foreground mb-1">Arrival</p>
-                <p className="text-2xl font-semibold">{formatTime(data.arrivalTime) || 'N/A'}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Arrival</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold">{formatTime(data.arrivalTime) || 'N/A'}</p>
               </div>
-              <div>
-                <p className="text-md text-muted-foreground mb-1">Duration</p>
-                <p className="text-2xl font-semibold">{formatDuration(duration || undefined) || 'N/A'}</p>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Duration</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold">{formatDuration(duration || undefined) || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Route Map */}
-        <Card className="mb-6">
+        <Card className="mb-4 sm:mb-5 md:mb-6">
           <CardContent className="p-0">
-            {/* <h2 className="text-xl font-semibold mb-4">Route Map</h2> */}
             {stopsForMap.length >= 2 ? (
-              <RouteMap stops={stopsForMap} routeName={data.routeName || 'Route'} />
+              <div className="min-h-[250px] sm:min-h-[300px] md:min-h-[400px]">
+                <RouteMap stops={stopsForMap} routeName={data.routeName || 'Route'} />
+              </div>
             ) : (
-              <div className="h-64 flex items-center justify-center bg-muted/50 rounded-lg">
-                <div className="text-center text-muted-foreground">
-                  <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Map unavailable - insufficient stop data</p>
+              <div className="h-48 sm:h-56 md:h-64 flex items-center justify-center bg-muted/50 rounded-lg">
+                <div className="text-center text-muted-foreground px-4">
+                  <MapPin className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm sm:text-base">Map unavailable - insufficient stop data</p>
                 </div>
               </div>
             )}
@@ -394,14 +395,14 @@ const FindMyBusDetailPage = () => {
         </Card>
 
         {/* Main Content - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
           {/* Left Column: Stop List */}
           <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Stop List</h2>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold">Stop List</h2>
                 <Select value={stopViewMode} onValueChange={(value) => setStopViewMode(value as StopViewMode)}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] text-sm">
                     <SelectValue placeholder="Select view mode" />
                   </SelectTrigger>
                   <SelectContent>
@@ -412,44 +413,44 @@ const FindMyBusDetailPage = () => {
                 </Select>
               </div>
 
-              <div className="max-h-[500px] overflow-y-auto pr-2">
+              <div className="max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto pr-1 sm:pr-2">
                 {filteredStops.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                     {filteredStops.map((stop, index) => (
-                      <div key={stop.id || index} className="flex gap-4">
+                      <div key={stop.id || index} className="flex gap-2 sm:gap-3 md:gap-4">
                         {/* Time Column */}
-                        <div className="flex-shrink-0 w-16">
-                          <div className="text-lg font-semibold text-foreground">
+                        <div className="flex-shrink-0 w-12 sm:w-14 md:w-16">
+                          <div className="text-sm sm:text-base md:text-lg font-semibold text-foreground">
                             {formatTime(stop.departureTime || stop.arrivalTime) || '-'}
                           </div>
                         </div>
 
                         {/* Timeline & Stop Info */}
-                        <div className="flex flex-col flex-1">
-                          <div className="flex items-start gap-3">
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <div className="flex items-start gap-2 sm:gap-2.5 md:gap-3">
                             {/* Timeline Indicator */}
-                            <div className="flex flex-col items-center pt-0.5">
-                              <div className={`w-3 h-3 rounded-full ${
+                            <div className="flex flex-col items-center pt-0.5 flex-shrink-0">
+                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${
                                 index === 0 ? 'bg-green-500' : 
                                 index === filteredStops.length - 1 ? 'bg-red-500' : 
                                 'bg-blue-500'
                               }`} />
                               {index < filteredStops.length - 1 && (
-                                <div className="w-0.5 h-9 bg-border mt-1" />
+                                <div className="w-0.5 h-8 sm:h-9 bg-border mt-1" />
                               )}
                             </div>
 
                             {/* Stop Details */}
-                            <div className="flex-1 min-w-0 bg-gray-200/60 px-3 py-2 rounded-sm">
-                              <p className="text-sm font-medium text-foreground truncate">
+                            <div className="flex-1 min-w-0 bg-gray-200/60 px-2 sm:px-2.5 md:px-3 py-1.5 sm:py-2 rounded-sm">
+                              <p className="text-xs sm:text-sm font-medium text-foreground truncate">
                                 {stop.stopName}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                                 Stop {stop.stopOrder}
                               </p>
                               
                               {stopViewMode === 'arrival-departure' && (
-                                <div className="flex gap-4 mt-2 text-xs">
+                                <div className="flex gap-3 sm:gap-4 mt-1.5 sm:mt-2 text-[10px] sm:text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Arr: </span>
                                     <span className="font-medium">
@@ -471,9 +472,9 @@ const FindMyBusDetailPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No stops available for this view mode</p>
+                  <div className="text-center py-8 sm:py-10 md:py-12 text-muted-foreground">
+                    <MapPin className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm sm:text-base">No stops available for this view mode</p>
                   </div>
                 )}
               </div>
@@ -481,19 +482,19 @@ const FindMyBusDetailPage = () => {
           </Card>
 
           {/* Right Column: Schedule & Bus Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
             {/* Schedule Details */}
             {data.operatingDays && data.operatingDays.length > 0 && (
               <Card>
-                <CardContent className="p-4 md:p-6">
-                  <h2 className="text-xl font-semibold mb-4">Schedule Details</h2>
-                  <div className="space-y-4">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Schedule Details</h2>
+                  <div className="space-y-3 sm:space-y-4">
                     {/* Operating Days */}
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">Operating Days</p>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">Operating Days</p>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {data.operatingDays.map((day) => (
-                          <Badge key={day} variant="secondary" className="px-2.5 py-1">
+                          <Badge key={day} variant="secondary" className="px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs">
                             {day}
                           </Badge>
                         ))}
@@ -501,15 +502,15 @@ const FindMyBusDetailPage = () => {
                     </div>
 
                     {/* Operating Today */}
-                    <div className="pt-2">
-                      <p className="text-sm text-muted-foreground mb-2">Operating Today</p>
+                    <div className="pt-1.5 sm:pt-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">Operating Today</p>
                       <div>
                         {isOperatingToday() ? (
-                          <Badge className="bg-green-500 hover:bg-green-600 text-white px-3 py-1">
+                          <Badge className="bg-green-500 hover:bg-green-600 text-white px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm">
                             Yes
                           </Badge>
                         ) : (
-                          <Badge variant="destructive" className="px-3 py-1">
+                          <Badge variant="destructive" className="px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm">
                             No
                           </Badge>
                         )}
@@ -518,10 +519,10 @@ const FindMyBusDetailPage = () => {
 
                     {/* Exceptions */}
                     {data.scheduleExceptions && data.scheduleExceptions.length > 0 && (
-                      <div className="pt-2 border-t">
+                      <div className="pt-1.5 sm:pt-2 border-t">
                         <Button
                           variant="link"
-                          className="p-0 h-auto text-primary hover:underline"
+                          className="p-0 h-auto text-primary hover:underline text-xs sm:text-sm"
                           onClick={() => setShowExceptions(true)}
                         >
                           View schedule exceptions ({data.scheduleExceptions.length})
@@ -535,59 +536,59 @@ const FindMyBusDetailPage = () => {
 
             {/* Bus Details */}
             <Card>
-              <CardContent className="p-4 md:p-6">
-                <h2 className="text-xl font-semibold mb-4">Bus Details</h2>
-                <div className="space-y-3">
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Bus Details</h2>
+                <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                   {data.busPlateNumber && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Bus Plate:</span>
-                      <span className="font-medium">{data.busPlateNumber}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Bus Plate:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.busPlateNumber}</span>
                     </div>
                   )}
                   {data.operatorName && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Operator:</span>
-                      <span className="font-medium">{data.operatorName}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Operator:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.operatorName}</span>
                     </div>
                   )}
                   {data.busModel && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Vehicle Type:</span>
-                      <span className="font-medium">{data.busModel}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Vehicle Type:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.busModel}</span>
                     </div>
                   )}
                   {data.busCapacity && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Capacity:</span>
-                      <span className="font-medium">{data.busCapacity} passengers</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Capacity:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.busCapacity} passengers</span>
                     </div>
                   )}
                   {data.driverName && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Driver:</span>
-                      <span className="font-medium">{data.driverName}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Driver:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.driverName}</span>
                     </div>
                   )}
                   {data.conductorName && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Conductor:</span>
-                      <span className="font-medium">{data.conductorName}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Conductor:</span>
+                      <span className="font-medium text-xs sm:text-sm text-right">{data.conductorName}</span>
                     </div>
                   )}
                   {data.contactNumber && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Contact:</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Contact:</span>
                       <a 
                         href={`tel:${data.contactNumber}`} 
-                        className="font-medium text-primary hover:underline flex items-center gap-1"
+                        className="font-medium text-primary hover:underline flex items-center gap-1 text-xs sm:text-sm"
                       >
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
                         {data.contactNumber}
                       </a>
                     </div>
                   )}
                   {!data.busPlateNumber && !data.operatorName && !data.busModel && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
+                    <p className="text-xs sm:text-sm text-muted-foreground text-center py-3 sm:py-4">
                       Bus details not available
                     </p>
                   )}
@@ -600,26 +601,26 @@ const FindMyBusDetailPage = () => {
 
       {/* Exceptions Modal */}
       <Dialog open={showExceptions} onOpenChange={setShowExceptions}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-xl md:max-w-2xl max-h-[85vh] sm:max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Schedule Exceptions</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">Schedule Exceptions</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[300px] sm:max-h-[350px] md:max-h-[400px] overflow-y-auto">
             {data?.scheduleExceptions && data.scheduleExceptions.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                 {data.scheduleExceptions.map((exception: any, index: number) => (
-                  <div key={exception.id || index} className="p-3 border rounded-lg bg-muted/50">
-                    <div className="flex gap-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">
+                  <div key={exception.id || index} className="p-2.5 sm:p-3 border rounded-lg bg-muted/50">
+                    <div className="flex gap-2 mb-1.5 sm:mb-2">
+                      <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-xs sm:text-sm">
                           {exception.exceptionDate || exception.date || 'Exception'}
                         </p>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                           {exception.description || exception.reason || 'No description available'}
                         </p>
                         {exception.type && (
-                          <Badge variant="outline" className="mt-2 text-xs">
+                          <Badge variant="outline" className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs">
                             {exception.type}
                           </Badge>
                         )}
@@ -629,8 +630,8 @@ const FindMyBusDetailPage = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No exceptions found</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <p className="text-sm sm:text-base">No exceptions found</p>
               </div>
             )}
           </div>
