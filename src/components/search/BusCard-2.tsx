@@ -59,7 +59,7 @@ export default function BusCard2() {
             <div className="min-w-0">
               <div className="flex items-center gap-1 sm:gap-2 flex-wrap mb-1">
                 <span className="font-bold text-lg sm:text-xl text-foreground">{bus.routeNumber}</span>
-                <span className="hidden sm:inline text-lg text-foreground">|</span>
+                <span className="sm:inline font-bold text-lg text-foreground">|</span>
                 <h3 className="text-lg sm:text-xl font-bold text-foreground">
                   {bus.routeName}
                 </h3>
@@ -97,10 +97,10 @@ export default function BusCard2() {
           <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1">
             {bus.busPlateNumber}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 hidden md:inline-flex">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 md:inline-flex">
             {bus.busModel}
           </Badge>
-          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 hidden lg:inline-flex">
+          <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 lg:inline-flex">
             Cap: {bus.busCapacity}
           </Badge>
         </div>
