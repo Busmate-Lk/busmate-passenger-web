@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import busLogo from "@/assets/bus-logo.png";
 import busLogoText from "@/assets/bus-logo-text.png";
+import { SignedIn, SignedOut, SignInButton, SignOutButton, User, UserDropdown, UserProfile } from "@asgardeo/react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,6 +48,14 @@ const Navbar = () => {
             <Link to="/findmybus" className={`transition-colors font-medium ${
               isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
             }`}>FindMyBus</Link>
+
+            <SignedIn>
+              {/* <SignOutButton /> */}
+              <UserDropdown />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
