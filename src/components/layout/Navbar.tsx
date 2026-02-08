@@ -1,5 +1,5 @@
 // Navbar for public site — no auth buttons
-import { Menu, X } from "lucide-react";
+import { Menu, User2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import busLogo from "@/assets/bus-logo.png";
@@ -23,11 +23,10 @@ const Navbar = () => {
   // No logout / auth functions required
 
   return <>
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-sm border-b border-border shadow-card' 
-        : 'bg-transparent'
-    }`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+      ? 'bg-white/95 backdrop-blur-sm border-b border-border shadow-card'
+      : 'bg-transparent'
+      }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -42,27 +41,34 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className={`transition-colors font-medium ${
-              isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
-            }`}>Home</Link>
-            <Link to="/findmybus" className={`transition-colors font-medium ${
-              isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
-            }`}>FindMyBus</Link>
+            <Link to="/" className={`transition-colors font-medium ${isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
+              }`}>Home</Link>
+            <Link to="/findmybus" className={`transition-colors font-medium ${isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-blue-100'
+              }`}>FindMyBus</Link>
 
             <SignedIn>
-              {/* <SignOutButton /> */}
-              <UserDropdown />
+              <UserDropdown menuItems={[
+                {
+                  icon: <User2 />,
+                  label: 'Profile',
+                  onClick: () => {
+                    // Navigate to profile page
+                    window.location.href = '/profile';
+                  }
+                },
+              ]} />
             </SignedIn>
             <SignedOut>
-              <SignInButton />
+              <SignInButton>
+                Log In
+              </SignInButton>
             </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
-            className={`md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors ${
-              isScrolled ? 'text-foreground' : 'text-white'
-            }`}
+          <button
+            className={`md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors ${isScrolled ? 'text-foreground' : 'text-white'
+              }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -76,11 +82,11 @@ const Navbar = () => {
     {isMenuOpen && (
       <>
         {/* Backdrop */}
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-[60] md:hidden backdrop-blur-sm"
           onClick={() => setIsMenuOpen(false)}
         />
-        
+
         {/* Drawer */}
         <div className="fixed top-0 right-0 h-full w-[280px] bg-white z-[70] md:hidden shadow-2xl animate-in slide-in-from-right duration-300">
           <div className="flex flex-col h-full">
@@ -104,20 +110,37 @@ const Navbar = () => {
             {/* Drawer Content */}
             <nav className="flex-1 px-4 py-6">
               <div className="flex flex-col space-y-1">
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className="px-4 py-3 text-foreground hover:bg-muted hover:text-primary transition-colors rounded-lg font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </Link>
-                <Link 
-                  to="/findmybus" 
+                <Link
+                  to="/findmybus"
                   className="px-4 py-3 text-foreground hover:bg-muted hover:text-primary transition-colors rounded-lg font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   FindMyBus
                 </Link>
+                <SignedIn>
+                  <Link
+                    to="/profile"
+                    className="px-4 py-3 text-foreground hover:bg-muted hover:text-primary transition-colors rounded-lg font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <SignOutButton className="w-full text-left px-4 py-3 text-foreground hover:bg-muted hover:text-primary transition-colors rounded-lg font-medium">
+                    Logout
+                  </SignOutButton>
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton className="w-full text-left px-4 py-3 text-foreground hover:bg-muted hover:text-primary transition-colors rounded-lg font-medium">
+                    Login
+                  </SignInButton>
+                </SignedOut>
               </div>
             </nav>
 

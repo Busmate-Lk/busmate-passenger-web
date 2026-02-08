@@ -9,6 +9,7 @@ import FindMyBusPage from "./pages/FindMyBusPage";
 import FindMyBusDetailPage from "./pages/FindMyBusDetailPage";
 import TripDetails from "./pages/TripDetails";
 import NotFoundPage from "./pages/NotFoundPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/findmybus" element={<FindMyBusPage />} />
             <Route path="/findmybus/detail" element={<FindMyBusDetailPage />} />
             <Route path="/trip/:tripId" element={<TripDetails />} />
+            <Route path="/profile" element={<ProfilePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
