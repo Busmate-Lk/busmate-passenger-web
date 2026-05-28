@@ -6,7 +6,7 @@
     },
     {
       "source": "/api/route-management/:path*",
-      "destination": "http://18.140.161.237:8080/:path*"
+      "destination": "https://route-management-service.onrender.com/:path*"
     },
     {
       "source": "/api/notification-management/:path*",
